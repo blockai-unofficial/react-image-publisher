@@ -23,13 +23,36 @@ var ImagePublisher = React.createClass({
     });
   },
   uploadToBitstore: function() {
+    var component = this;
+    var onStartUploadToBitstore = this.props.onStartUploadToBitstore;
+    var onEndUploadToBitstore = this.props.onEndUploadToBitstore;
+    var commonWallet = this.props.commonWallet;
+    var bitstoreClient = bitstore(commonWallet);
     var fileInfo = this.state.fileInfo;
+    var fileDropState = this.state.fileDropState;
+    if (fileDropState != "scanned") {
+      return;
+    }
     this.setState({
       fileDropState: "uploading"
     });
-    this.props.onStartUploadToBitstore(false, {
-      success: true,
-      fileInfo: fileInfo
+    if (onStartUploadToBitstore) {
+      onStartUploadToBitstore(false, {
+        fileInfo: fileInfo
+      });
+    }
+    bitstoreClient.files.put(fileInfo.file, function(error, res) {
+      var bitstoreMeta = res.body;
+      component.setState({
+        bitstoreStatus: "new",
+        bitstoreMeta: bitstoreMeta,
+        fileDropState: "uploaded"
+      })
+      if (onEndUploadToBitstore) {
+        onEndUploadToBitstore(false, {
+          bitstoreMeta: bitstoreMeta
+        });
+      }
     });
   },
   dragOver: function (event) {

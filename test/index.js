@@ -57,7 +57,9 @@ var simpleCommonWallet = function(options) {
   };
 
   var commonWallet = {
+    network: 'testnet',
     signRawTransaction: signRawTransaction,
+    signMessage: signMessage,
     address: address,
     createTransaction: createTransaction
   };
@@ -66,9 +68,25 @@ var simpleCommonWallet = function(options) {
 
 };
 
+var createRandomFile = function(size, callback) {
+  // TODO: create a random image and not just text
+  var buffer = randombytes(size);
+  var name = "random.txt";
+  var path = __dirname + "/" + name;
+  var file = new File({
+    name: name,
+    type: "text/plain",
+    buffer: buffer
+  });
+  fs.writeFile(path, buffer, function(err) {
+    callback(file);
+  });
+};
+
 test('react-image-publisher', function (t) {
 
-  var React, ImagePublisher, TestUtils, commonWallet, commonBlockchain, file, fileBuffer, fileName, fileType;
+  var React, ImagePublisher, TestUtils, commonWallet, commonBlockchain; 
+  var file, fileBuffer, fileName, fileType;
 
   t.beforeEach(function (t) {
     
@@ -90,6 +108,7 @@ test('react-image-publisher', function (t) {
       network: "testnet"
     });
     fs.readFile(__dirname + '/test.gif', function (err, fileData) {
+      // at some point we could generate a random image so we don't have conflicts in bitstore
       fileBuffer = fileData;
       fileName = "test.gif";
       fileType = "image/gif";
@@ -108,25 +127,6 @@ test('react-image-publisher', function (t) {
     var element = React.findDOMNode(component);
     t.ok(element, "has react-image-publisher DOM element");
     t.end();
-  });
-
-  t.test('should trigger upload to bitstore callback', function (t) {
-
-    // this test is out of order!!!
-
-    var onStartUploadToBitstore = function(err, receipt) {
-      var fileDropState = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'fileDropState');
-      t.equal(fileDropState.getDOMNode().innerHTML, "uploading", "onStartUploadToBitstore: fileDropState element should show 'uploading' after having clicked upload");
-      t.equal(renderedComponent.state.fileDropState, "uploading", "onStartUploadToBitstore: component.state.fileDropState should be 'uploading'");
-      t.ok(receipt, "onStartUploadToBitstore: has receipt");
-      t.equal(receipt.success, true, "onStartUploadToBitstore: upload was a success");
-      t.end();
-    };
-
-    var renderedComponent = TestUtils.renderIntoDocument(React.createElement(ImagePublisher, { commonWallet: commonWallet, commonBlockchain: commonBlockchain, onStartUploadToBitstore: onStartUploadToBitstore }));
-    var component = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'upload-to-bitstore');
-    TestUtils.Simulate.click(component.getDOMNode());
-
   });
 
   test('should handle file drop', function(t) {
@@ -165,6 +165,51 @@ test('react-image-publisher', function (t) {
     var fileDropState = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'fileDropState');
     t.equal(fileDropState.getDOMNode().innerHTML, "scanning", "fileDropState element should show 'scanning' immediately after dropping the file");
     t.equal(renderedComponent.state.fileDropState, "scanning", "component.state.fileDropState should be 'scanning'");
+
+  });
+
+  t.test('should allow and upload to bitstore after a file has been dropped and the upload button was clicked', function (t) {
+
+    t.plan(8);
+
+    var size = 256;
+
+    createRandomFile(size, function(randomFile) {
+
+      var fakeEvt = {
+        dataTransfer: {
+          files: [ randomFile ]
+        }
+      };
+
+      var onFileDrop = function(err, fileInfo) {
+        var uploadToBitstore = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'upload-to-bitstore');
+        TestUtils.Simulate.click(uploadToBitstore.getDOMNode());
+      };
+
+      var onEndUploadToBitstore = function(err, receipt) {
+        t.ok(receipt.bitstoreMeta, "onEndUploadToBitstore: has bitstoreMeta");
+        var bitstoreMeta = receipt.bitstoreMeta;
+        t.equal(bitstoreMeta.size, size, "onEndUploadToBitstore: bitstoreMeta has the same size");
+        t.ok(bitstoreMeta.uri, "onEndUploadToBitstore: bitstoreMeta has a uri");
+        t.ok(bitstoreMeta.hash_sha1, "onEndUploadToBitstore: bitstoreMeta has a hash_sha1");
+      };
+
+      var onStartUploadToBitstore = function(err, receipt) {
+        var fileDropState = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'fileDropState');
+        t.equal(fileDropState.getDOMNode().innerHTML, "uploading", "onStartUploadToBitstore: fileDropState element should show 'uploading' after having clicked upload");
+        t.equal(renderedComponent.state.fileDropState, "uploading", "onStartUploadToBitstore: component.state.fileDropState should be 'uploading'");
+        t.ok(receipt, "onStartUploadToBitstore: has receipt");
+        t.ok(receipt.fileInfo.fileData, "onStartUploadToBitstore: has fileInfo.fileData");
+        renderedComponent.state.fileInfo.file = __dirname + '/random.txt'; // to get around limitations of File and FileReader...
+      };
+
+      var renderedComponent = TestUtils.renderIntoDocument(React.createElement(ImagePublisher, { commonWallet: commonWallet, commonBlockchain: commonBlockchain, onStartUploadToBitstore: onStartUploadToBitstore, onEndUploadToBitstore: onEndUploadToBitstore, onFileDrop: onFileDrop, FileReader: FileReader }));
+
+      var fileDropArea = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'file-drop-area');
+      TestUtils.Simulate.drop(fileDropArea.getDOMNode(), fakeEvt);
+
+    });
 
   });
 
