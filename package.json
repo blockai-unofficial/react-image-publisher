@@ -1,0 +1,49 @@
+{
+  "name": "react-image-publisher",
+  "version": "0.0.1",
+  "description": "A common blockchain React component for publishing images with Bitstore and Open Publish",
+  "main": "dist.js",
+  "scripts": {
+    "build": "babel src/index.js > dist.js",
+    "test": "npm run build && tapes test/**/*.js | tap-spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blockai/react-image-publisher.git"
+  },
+  "keywords": [
+    "react",
+    "common-blockchain",
+    "bitcoin",
+    "bitstore",
+    "openpublish",
+    "image",
+    "publish",
+    "react-component"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/blockai/react-image-publisher/issues"
+  },
+  "homepage": "https://github.com/blockai/react-image-publisher#readme",
+  "dependencies": {
+    "bitstore": "0.0.5",
+    "openpublish": "0.0.6"
+  },
+  "peerDependencies": {
+    "react": "*"
+  },
+  "devDependencies": {
+    "babel": "^5.6.14",
+    "bitcoinjs-lib": "^1.5.7",
+    "blockcypher-unofficial": "^1.4.0",
+    "file-api": "^0.10.4",
+    "filereader": "^0.10.3",
+    "jsdom": "^3.1.2",
+    "randombytes": "^2.0.1",
+    "react-tools": "^0.13.3",
+    "tap-spec": "^4.0.2",
+    "tapes": "^2.0.0"
+  }
+}
