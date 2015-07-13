@@ -4,8 +4,11 @@
   "description": "A common blockchain React component for publishing images with Bitstore and Open Publish",
   "main": "dist.js",
   "scripts": {
-    "build": "babel src/index.js > dist.js",
-    "test": "npm run build && tapes test/**/*.js | tap-spec"
+    "build:src": "babel src/index.js > dist.js",
+    "build:example": "browserify ./example/example.js > ./example/dist.js",
+    "build": "npm run build:src && npm run build:example",
+    "test": "npm run build && tapes test/**/*.js | tap-spec",
+    "start": "http-server ./example/ -a 0.0.0.0 -p 9000 -c-1"
   },
   "repository": {
     "type": "git",
@@ -41,8 +44,10 @@
     "bitcoinjs-lib": "^1.5.7",
     "blockcast": "^1.0.3",
     "blockcypher-unofficial": "^1.4.0",
+    "browserify": "^10.2.6",
     "file-api": "^0.10.4",
     "filereader": "^0.10.3",
+    "http-server": "^0.8.0",
     "jsdom": "^3.1.2",
     "randombytes": "^2.0.1",
     "react-tools": "^0.13.3",
