@@ -5,6 +5,42 @@ var openpublish = require('openpublish');
 var bitstore = require('bitstore');
 var shasum = require('shasum');
 
+var styles = {
+  base: {
+    height: '100%'
+  },
+  fileDrop: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: 200,
+    marginBottom: 20,
+    paddingTop: 3,
+    paddingBottom: 3,
+    borderStyle: 'dashed',
+    borderColor: '#4169E1',
+    fontSize: 32,
+    backgroundColor: '#F2F3F4',
+    color: '#34495E'
+  },
+  imagePreview: {
+    maxHeight: 206
+  },
+  button: {
+    position: 'relative',
+    display: 'flex',
+    marginTop: 20,
+    marginLeft: 'auto',
+    padding: '10px 19px',
+    fontSize: 17,
+    border: 'none',
+    backgroundColor: '#2ECC71',
+    color: '#FFFFFF'
+  }
+};
+
 var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
   propTypes: {
@@ -185,13 +221,13 @@ var ImagePublisher = React.createClass({
   },
   render: function render() {
     var fileDropState = this.state.fileDropState;
-    var imgPreview = this.state.imgPreviewDataURL ? React.createElement('img', { className: 'image-preview', src: this.state.imgPreviewDataURL }) : false;
+    var imgPreview = this.state.imgPreviewDataURL ? React.createElement('img', { style: styles.imagePreview, className: 'image-preview', src: this.state.imgPreviewDataURL }) : false;
     return React.createElement(
       'div',
-      { className: 'react-image-publisher' },
+      { style: styles.base, className: 'react-image-publisher' },
       React.createElement(
         'div',
-        { className: 'file-drop-area', onDragOver: this.dragOver, onDragEnd: this.dragEnd, onDrop: this.drop },
+        { style: styles.fileDrop, className: 'file-drop-area', onDragOver: this.dragOver, onDragEnd: this.dragEnd, onDrop: this.drop },
         React.createElement(
           'div',
           { className: 'fileDropState' },
@@ -201,12 +237,12 @@ var ImagePublisher = React.createClass({
       ),
       React.createElement(
         'button',
-        { className: 'upload-to-bitstore', onClick: this.uploadToBitstore },
+        { style: styles.button, className: 'upload-to-bitstore', onClick: this.uploadToBitstore },
         'Upload To Bitstore'
       ),
       React.createElement(
         'button',
-        { className: 'register-with-openpublish', onClick: this.registerWithOpenPublish },
+        { style: styles.button, className: 'register-with-openpublish', onClick: this.registerWithOpenPublish },
         'Register With Open Publish'
       )
     );

@@ -3,6 +3,42 @@ var openpublish = require('openpublish');
 var bitstore = require('bitstore');
 var shasum = require('shasum');
 
+var styles = {
+  base: {
+    height: '100%'
+  },
+  fileDrop: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: 200,
+    marginBottom: 20,
+    paddingTop: 3,
+    paddingBottom: 3,
+    borderStyle: 'dashed',
+    borderColor: '#4169E1',
+    fontSize: 32,
+    backgroundColor: '#F2F3F4',
+    color: '#34495E'
+  },
+  imagePreview: {
+    maxHeight: 206
+  },
+  button: {
+    position: 'relative',
+    display: 'flex',
+    marginTop: 20,
+    marginLeft: 'auto',
+    padding: '10px 19px',
+    fontSize: 17,
+    border: 'none',
+    backgroundColor: '#2ECC71',
+    color: '#FFFFFF'
+  }
+};
+
 var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
   propTypes: {
@@ -184,15 +220,15 @@ var ImagePublisher = React.createClass({
   },
   render: function () {
     var fileDropState = this.state.fileDropState;
-    var imgPreview = this.state.imgPreviewDataURL ? <img className="image-preview" src={this.state.imgPreviewDataURL} /> : false;
+    var imgPreview = this.state.imgPreviewDataURL ? <img style={styles.imagePreview} className="image-preview" src={this.state.imgPreviewDataURL} /> : false;
     return (
-      <div className='react-image-publisher'>
-        <div className="file-drop-area" onDragOver={this.dragOver} onDragEnd={this.dragEnd} onDrop={this.drop}>
+      <div style={styles.base} className='react-image-publisher'>
+        <div style={styles.fileDrop} className="file-drop-area" onDragOver={this.dragOver} onDragEnd={this.dragEnd} onDrop={this.drop}>
           <div className="fileDropState">{fileDropState || "drop file"}</div>
           {imgPreview}
         </div>
-        <button className='upload-to-bitstore' onClick={this.uploadToBitstore}>Upload To Bitstore</button>
-        <button className='register-with-openpublish' onClick={this.registerWithOpenPublish}>Register With Open Publish</button>
+        <button style={styles.button} className='upload-to-bitstore' onClick={this.uploadToBitstore}>Upload To Bitstore</button>
+        <button style={styles.button} className='register-with-openpublish' onClick={this.registerWithOpenPublish}>Register With Open Publish</button>
       </div>
     )
   }
