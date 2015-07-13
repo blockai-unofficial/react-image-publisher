@@ -5,6 +5,8 @@ var randombytes = require('randombytes');
 var FileReader = require("filereader");
 var File = require("file-api").File;
 var fs = require('fs');
+var request = require('request');
+var blockcast = require('blockcast');
 
 /*
 
@@ -89,7 +91,7 @@ test('react-image-publisher', function (t) {
   var file, fileBuffer, fileName, fileType;
 
   t.beforeEach(function (t) {
-    
+    // remove react from the require cache
     for (var key in require.cache) {
       if (key.match(/\/node_modules\/react\//)) {
         delete require.cache[key];
@@ -100,10 +102,12 @@ test('react-image-publisher', function (t) {
     global.navigator = {
       userAgent: 'node.js'
     };
+    global.FileReader = FileReader;
+    global.window.FileReader = FileReader;
     React = require('react/addons');
     ImagePublisher = require('../');
     TestUtils = React.addons.TestUtils;
-    commonWallet = simpleCommonWallet();
+    commonWallet = simpleCommonWallet({seed:"test"});
     commonBlockchain = require('blockcypher-unofficial')({
       network: "testnet"
     });
@@ -129,7 +133,7 @@ test('react-image-publisher', function (t) {
     t.end();
   });
 
-  test('should handle file drop', function(t) {
+  t.test('should handle file drop', function(t) {
 
     t.plan(9); // from outer space
 
@@ -158,7 +162,12 @@ test('react-image-publisher', function (t) {
       t.equal(imagePreviewDataURL, "data:image/gif;base64," + fileBuffer.toString("base64"), "onImagePreviewDataURL: image preview data URL should be correct");
     };
 
-    var renderedComponent = TestUtils.renderIntoDocument(React.createElement(ImagePublisher, { commonWallet: commonWallet, commonBlockchain: commonBlockchain, onImagePreviewDataURL: onImagePreviewDataURL, onFileDrop: onFileDrop, FileReader: FileReader }));
+    var renderedComponent = TestUtils.renderIntoDocument(React.createElement(ImagePublisher, { 
+      commonWallet: commonWallet, 
+      commonBlockchain: commonBlockchain, 
+      onImagePreviewDataURL: onImagePreviewDataURL, 
+      onFileDrop: onFileDrop 
+    }));
     var fileDropArea = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'file-drop-area');
     TestUtils.Simulate.drop(fileDropArea.getDOMNode(), fakeEvt);
 
@@ -168,9 +177,9 @@ test('react-image-publisher', function (t) {
 
   });
 
-  t.test('should allow and upload to bitstore after a file has been dropped and the upload button was clicked', function (t) {
+  t.test('should upload to bitstore and register with openpublish', function (t) {
 
-    t.plan(8);
+    t.plan(16);
 
     var size = 256;
 
@@ -187,24 +196,67 @@ test('react-image-publisher', function (t) {
         TestUtils.Simulate.click(uploadToBitstore.getDOMNode());
       };
 
+      var onStartRegisterWithOpenPublish = function(err, fileInfo) {
+        t.equal(renderedComponent.state.fileDropState, "registering", "onStartRegisterWithOpenPublish: component.state.fileDropState should be 'registering'");
+      };
+
+      var onEndRegisterWithOpenPublish = function(err, openPublishReceipt) {
+        t.ok(openPublishReceipt.data.op == "r", "onEndRegisterWithOpenPublish:openPublishReceipt.data should be a registration op");
+        t.equal(renderedComponent.state.fileDropState, "registered", "onEndRegisterWithOpenPublish: component.state.fileDropState should be 'registered'");
+        var blockcastTx = openPublishReceipt.blockcastTx;
+        var txid = blockcastTx.txid;
+        t.ok(txid, "onEndRegisterWithOpenPublish: openPublishReceipt.blockcastTx should have a txid");
+        var uri = openPublishReceipt.data.uri;
+        t.ok(uri, "onEndRegisterWithOpenPublish: openPublishReceipt.data should have a uri");
+        request(uri, function(err, res, body) {
+          t.equal(body, randomFile.buffer.toString("utf8"), "onEndRegisterWithOpenPublish:request: uri should return the same data as randomFile");
+        });
+      }
+
       var onEndUploadToBitstore = function(err, receipt) {
         t.ok(receipt.bitstoreMeta, "onEndUploadToBitstore: has bitstoreMeta");
         var bitstoreMeta = receipt.bitstoreMeta;
         t.equal(bitstoreMeta.size, size, "onEndUploadToBitstore: bitstoreMeta has the same size");
         t.ok(bitstoreMeta.uri, "onEndUploadToBitstore: bitstoreMeta has a uri");
         t.ok(bitstoreMeta.hash_sha1, "onEndUploadToBitstore: bitstoreMeta has a hash_sha1");
+        delete(randomFile.stream); // if we want to re-use a file, we need to do a hack to remove the stream...
+        renderedComponent.state.fileInfo.file = randomFile // undo our hack...
+        var registerWithOpenPublish = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'register-with-openpublish');
+        TestUtils.Simulate.click(registerWithOpenPublish.getDOMNode());
       };
 
-      var onStartUploadToBitstore = function(err, receipt) {
+      var onStartUploadToBitstore = function(err, receipt) { 
         var fileDropState = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'fileDropState');
         t.equal(fileDropState.getDOMNode().innerHTML, "uploading", "onStartUploadToBitstore: fileDropState element should show 'uploading' after having clicked upload");
         t.equal(renderedComponent.state.fileDropState, "uploading", "onStartUploadToBitstore: component.state.fileDropState should be 'uploading'");
         t.ok(receipt, "onStartUploadToBitstore: has receipt");
         t.ok(receipt.fileInfo.fileData, "onStartUploadToBitstore: has fileInfo.fileData");
-        renderedComponent.state.fileInfo.file = __dirname + '/random.txt'; // to get around limitations of File and FileReader...
+        t.ok(receipt.bitstoreBalance > 0, "onStartUploadToBitstore: has bitstoreBalance greater than 0");
+        t.ok(receipt.bitstoreDepositAddress, "onStartUploadToBitstore: has bitstoreDepositAddress");
+        /*
+
+          We need to use a small hack to get around limitations of File and FileReader...
+
+          For this test suite, when we call bitstoreClient.files.put(fileInfo.file, callbackFunction),
+          we want bitstoreClient to see a string and assume it is the path to a file as opposed to working
+          off of an instance of the browser File object...
+
+          A more elegeant solution would be to file the File object in the 'file-api' module so it is compatible with
+          superagent inside of the bitstoreClient.
+
+        */ 
+        renderedComponent.state.fileInfo.file = __dirname + '/random.txt'; // hack to get around limitations of File and FileReader
       };
 
-      var renderedComponent = TestUtils.renderIntoDocument(React.createElement(ImagePublisher, { commonWallet: commonWallet, commonBlockchain: commonBlockchain, onStartUploadToBitstore: onStartUploadToBitstore, onEndUploadToBitstore: onEndUploadToBitstore, onFileDrop: onFileDrop, FileReader: FileReader }));
+      var renderedComponent = TestUtils.renderIntoDocument(React.createElement(ImagePublisher, { 
+        commonWallet: commonWallet, 
+        commonBlockchain: commonBlockchain, 
+        onStartUploadToBitstore: onStartUploadToBitstore, 
+        onEndUploadToBitstore: onEndUploadToBitstore,
+        onStartRegisterWithOpenPublish: onStartRegisterWithOpenPublish, 
+        onEndRegisterWithOpenPublish: onEndRegisterWithOpenPublish, 
+        onFileDrop: onFileDrop 
+      }));
 
       var fileDropArea = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'file-drop-area');
       TestUtils.Simulate.drop(fileDropArea.getDOMNode(), fakeEvt);
