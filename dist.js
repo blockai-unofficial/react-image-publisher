@@ -28,7 +28,7 @@ var ImagePublisher = React.createClass({
       propagationStatus: ''
     };
   },
-  registerWithOpenPublish: function registerWithOpenPublish() {
+  registerWithOpenPublish: function registerWithOpenPublish(event) {
     var component = this;
     var onStartRegisterWithOpenPublish = this.props.onStartRegisterWithOpenPublish;
     var onEndRegisterWithOpenPublish = this.props.onEndRegisterWithOpenPublish;
@@ -64,7 +64,7 @@ var ImagePublisher = React.createClass({
       }
     });
   },
-  uploadToBitstore: function uploadToBitstore() {
+  uploadToBitstore: function uploadToBitstore(event) {
     var component = this;
     var onStartUploadToBitstore = this.props.onStartUploadToBitstore;
     var onEndUploadToBitstore = this.props.onEndUploadToBitstore;
@@ -201,12 +201,12 @@ var ImagePublisher = React.createClass({
       ),
       React.createElement(
         'button',
-        { className: 'upload-to-bitstore', onClick: this.uploadToBitstore },
+        { className: 'upload-to-bitstore', onClick: this.uploadToBitstore, style: { display: fileDropState != 'scanned' ? 'none' : '' } },
         'Upload To Bitstore'
       ),
       React.createElement(
         'button',
-        { className: 'register-with-openpublish', onClick: this.registerWithOpenPublish },
+        { className: 'register-with-openpublish', onClick: this.registerWithOpenPublish, style: { display: fileDropState != 'uploaded' ? 'none' : '' } },
         'Register With Open Publish'
       )
     );

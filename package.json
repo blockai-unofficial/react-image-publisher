@@ -29,7 +29,6 @@
   "homepage": "https://github.com/blockai/react-image-publisher#readme",
   "dependencies": {
     "bitstore": "0.0.5",
-    "blockcypher-unofficial": "^1.4.1",
     "openpublish": "0.0.6",
     "shasum": "^1.0.1"
   },
@@ -40,7 +39,7 @@
     "babel": "^5.6.14",
     "bitcoinjs-lib": "^1.5.7",
     "blockcast": "^1.0.3",
-    "blockcypher-unofficial": "^1.4.0",
+    "blockcypher-unofficial": "^1.4.1",
     "file-api": "^0.10.4",
     "filereader": "^0.10.3",
     "jsdom": "^3.1.2",
