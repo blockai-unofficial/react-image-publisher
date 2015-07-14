@@ -4,42 +4,7 @@ var React = require('react');
 var openpublish = require('openpublish');
 var bitstore = require('bitstore');
 var shasum = require('shasum');
-
-var styles = {
-  base: {
-    height: '100%'
-  },
-  fileDrop: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    height: 200,
-    marginBottom: 20,
-    paddingTop: 3,
-    paddingBottom: 3,
-    borderStyle: 'dashed',
-    borderColor: '#4169E1',
-    fontSize: 32,
-    backgroundColor: '#F2F3F4',
-    color: '#34495E'
-  },
-  imagePreview: {
-    maxHeight: 206
-  },
-  button: {
-    position: 'relative',
-    display: 'flex',
-    marginTop: 20,
-    marginLeft: 'auto',
-    padding: '10px 19px',
-    fontSize: 17,
-    border: 'none',
-    backgroundColor: '#2ECC71',
-    color: '#FFFFFF'
-  }
-};
+var InlineCss = require('react-inline-css');
 
 var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
@@ -64,7 +29,7 @@ var ImagePublisher = React.createClass({
       propagationStatus: ''
     };
   },
-  registerWithOpenPublish: function registerWithOpenPublish(event) {
+  registerWithOpenPublish: function registerWithOpenPublish() {
     var component = this;
     var onStartRegisterWithOpenPublish = this.props.onStartRegisterWithOpenPublish;
     var onEndRegisterWithOpenPublish = this.props.onEndRegisterWithOpenPublish;
@@ -100,7 +65,7 @@ var ImagePublisher = React.createClass({
       }
     });
   },
-  uploadToBitstore: function uploadToBitstore(event) {
+  uploadToBitstore: function uploadToBitstore() {
     var component = this;
     var onStartUploadToBitstore = this.props.onStartUploadToBitstore;
     var onEndUploadToBitstore = this.props.onEndUploadToBitstore;
@@ -221,29 +186,33 @@ var ImagePublisher = React.createClass({
   },
   render: function render() {
     var fileDropState = this.state.fileDropState;
-    var imgPreview = this.state.imgPreviewDataURL ? React.createElement('img', { style: styles.imagePreview, className: 'image-preview', src: this.state.imgPreviewDataURL }) : false;
+    var imgPreview = this.state.imgPreviewDataURL ? React.createElement('img', { className: 'image-preview', src: this.state.imgPreviewDataURL }) : false;
     return React.createElement(
-      'div',
-      { className: 'react-image-publisher' },
+      InlineCss,
+      { stylesheet: ' & * { box-sizing: border-box; font-smoothing: antialiased; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; } & .file-drop-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 200px; margin-bottom: 20px; padding: 3px 0 3px 0; border-style: dashed; border-color: #4169E1; background-color: #F2F3F4; color: #34495E; font-size: 32px; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .file-drop-area:hover { border-color: #5DADE2; } & .file-drop-state { margin-bottom: 20px; color: #34495E; font-size: 16px; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; text-align: right; } & .input { display: block; width: 100%; height: 42px; padding: 8px 12px; margin-bottom: 8px; border: 2px solid #BDC3C7; font-size: 15px; font-weight: bold; color: #34495E; } & .button { position: relative; display: flex; margin-left: auto; padding: 10px 19px; font-size: 17px; border: none; background-color: #2ECC71; color: #FFFFFF; cursor: pointer; } & .image-preview { max-height: 194px; } ' },
       React.createElement(
         'div',
-        { className: 'file-drop-area', onDragOver: this.dragOver, onDragEnd: this.dragEnd, onDrop: this.drop },
+        { className: 'react-image-publisher' },
         React.createElement(
           'div',
-          { className: 'fileDropState' },
-          fileDropState || 'drop file'
+          { className: 'file-drop-state' },
+          fileDropState ? 'File is ' + fileDropState : false
         ),
-        imgPreview
-      ),
-      React.createElement(
-        'button',
-        { className: 'upload-to-bitstore', onClick: this.uploadToBitstore, style: { display: fileDropState != 'scanned' ? 'none' : '' } },
-        'Upload To Bitstore'
-      ),
-      React.createElement(
-        'button',
-        { className: 'register-with-openpublish', onClick: this.registerWithOpenPublish, style: { display: fileDropState != 'uploaded' ? 'none' : '' } },
-        'Register With Open Publish'
+        React.createElement(
+          'div',
+          { className: 'file-drop-area', onDragOver: this.dragOver, onDragEnd: this.dragEnd, onDrop: this.drop, style: { borderColor: fileDropState === 'scanned' ? '#2ECC71' : '' } },
+          imgPreview ? { imgPreview: imgPreview } : 'Drop file here to upload'
+        ),
+        React.createElement(
+          'button',
+          { className: 'upload-to-bitstore button', onClick: this.uploadToBitstore, style: { display: fileDropState != 'scanned' ? 'none' : '' } },
+          'Upload To Bitstore'
+        ),
+        React.createElement(
+          'button',
+          { className: 'register-with-openpublish button', onClick: this.registerWithOpenPublish, style: { display: fileDropState != 'uploaded' ? 'none' : '' } },
+          'Register With Open Publish'
+        )
       )
     );
   }
