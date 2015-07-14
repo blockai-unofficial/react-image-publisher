@@ -189,18 +189,18 @@ var ImagePublisher = React.createClass({
     var imgPreview = this.state.imgPreviewDataURL ? React.createElement('img', { className: 'image-preview', src: this.state.imgPreviewDataURL }) : false;
     return React.createElement(
       InlineCss,
-      { stylesheet: ' & * { box-sizing: border-box; font-smoothing: antialiased; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; } & .file-drop-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 200px; margin-bottom: 20px; padding: 3px 0 3px 0; border-style: dashed; border-color: #4169E1; background-color: #F2F3F4; color: #34495E; font-size: 32px; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .file-drop-area:hover { border-color: #5DADE2; } & .file-drop-state { margin-bottom: 20px; color: #34495E; font-size: 16px; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; text-align: right; } & .input { display: block; width: 100%; height: 42px; padding: 8px 12px; margin-bottom: 8px; border: 2px solid #BDC3C7; font-size: 15px; font-weight: bold; color: #34495E; } & .button { position: relative; display: flex; margin-left: auto; padding: 10px 19px; font-size: 17px; border: none; background-color: #2ECC71; color: #FFFFFF; cursor: pointer; } & .image-preview { max-height: 194px; } ' },
+      { stylesheet: ' & * { box-sizing: border-box; font-smoothing: antialiased; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; } & .file-drop-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 200px; margin-bottom: 32px; padding: 3px 0 3px 0; border-style: dashed; border-color: #4169E1; background-color: #F2F3F4; color: #34495E; font-size: 32px; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .file-drop-area:hover { border-color: #5DADE2; } & .file-drop-state { margin-bottom: 18px; height: 18px; color: #34495E; font-size: 16px; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; text-align: right; } & .input { display: block; width: 100%; height: 42px; padding: 8px 12px; margin-bottom: 8px; border: 2px solid #BDC3C7; font-size: 15px; font-weight: bold; color: #34495E; } & .button { position: relative; display: flex; margin-left: auto; padding: 10px 19px; font-size: 17px; border: none; background-color: #2ECC71; color: #FFFFFF; cursor: pointer; } & .image-preview { max-height: 194px; } ' },
       React.createElement(
         'div',
         { className: 'react-image-publisher' },
         React.createElement(
           'div',
-          { className: 'file-drop-state' },
+          { className: 'file-drop-state', style: { visibility: fileDropState ? 'visible' : 'hidden' } },
           fileDropState ? 'File is ' + fileDropState : false
         ),
         React.createElement(
           'div',
-          { className: 'file-drop-area', onDragOver: this.dragOver, onDragEnd: this.dragEnd, onDrop: this.drop, style: { borderColor: fileDropState === 'scanned' ? '#2ECC71' : '' } },
+          { className: 'file-drop-area', onDragOver: this.dragOver, onDragEnd: this.dragEnd, onDrop: this.drop, style: { borderColor: fileDropState === 'scanned' || fileDropState === 'uploaded' ? '#2ECC71' : '' } },
           imgPreview ? { imgPreview: imgPreview } : 'Drop file here to upload'
         ),
         React.createElement(

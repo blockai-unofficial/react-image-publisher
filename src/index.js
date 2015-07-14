@@ -202,7 +202,7 @@ var ImagePublisher = React.createClass({
           justify-content: center;
           width: 100%;
           height: 200px;
-          margin-bottom: 20px;
+          margin-bottom: 32px;
           padding: 3px 0 3px 0;
           border-style: dashed;
           border-color: #4169E1;
@@ -215,7 +215,8 @@ var ImagePublisher = React.createClass({
           border-color: #5DADE2;
         }
         & .file-drop-state {
-          margin-bottom: 20px;
+          margin-bottom: 18px;
+          height: 18px;
           color: #34495E;
           font-size: 16px;
           font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
@@ -248,8 +249,8 @@ var ImagePublisher = React.createClass({
         }
       ">
         <div className='react-image-publisher'>
-          <div className="file-drop-state">{fileDropState ? "File is " + fileDropState : false}</div>
-          <div className="file-drop-area" onDragOver={this.dragOver} onDragEnd={this.dragEnd} onDrop={this.drop} style={{borderColor: fileDropState === "scanned" ? '#2ECC71' : ''}}>
+          <div className="file-drop-state" style={{visibility: fileDropState ? 'visible' : 'hidden'}}>{fileDropState ? "File is " + fileDropState : false}</div>
+          <div className="file-drop-area" onDragOver={this.dragOver} onDragEnd={this.dragEnd} onDrop={this.drop} style={{borderColor: fileDropState === "scanned" || fileDropState === "uploaded" ? '#2ECC71' : ''}}>
             { imgPreview ? {imgPreview} : 'Drop file here to upload' }
           </div>
           <button className='upload-to-bitstore button' onClick={this.uploadToBitstore} style={{display: fileDropState != "scanned" ? 'none' : ''}}>Upload To Bitstore</button>
