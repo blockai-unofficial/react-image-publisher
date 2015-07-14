@@ -227,8 +227,8 @@ var ImagePublisher = React.createClass({
           <div className="fileDropState">{fileDropState || "drop file"}</div>
           {imgPreview}
         </div>
-        <button className='upload-to-bitstore' onClick={this.uploadToBitstore}>Upload To Bitstore</button>
-        <button className='register-with-openpublish' onClick={this.registerWithOpenPublish}>Register With Open Publish</button>
+        <button className='upload-to-bitstore' onClick={this.uploadToBitstore} style={{display: fileDropState != "scanned" ? 'none' : ''}}>Upload To Bitstore</button>
+        <button className='register-with-openpublish' onClick={this.registerWithOpenPublish} style={{display: fileDropState != "uploaded" ? 'none' : ''}}>Register With Open Publish</button>
       </div>
     )
   }

@@ -193,7 +193,8 @@ test('react-image-publisher', function (t) {
 
       var onFileDrop = function(err, fileInfo) {
         var uploadToBitstore = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'upload-to-bitstore');
-        TestUtils.Simulate.click(uploadToBitstore.getDOMNode());
+        var uploadToBitstoreButton = uploadToBitstore.getDOMNode();
+        TestUtils.Simulate.click(uploadToBitstoreButton);
       };
 
       var onStartRegisterWithOpenPublish = function(err, fileInfo) {
