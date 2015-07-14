@@ -222,13 +222,13 @@ var ImagePublisher = React.createClass({
     var fileDropState = this.state.fileDropState;
     var imgPreview = this.state.imgPreviewDataURL ? <img style={styles.imagePreview} className="image-preview" src={this.state.imgPreviewDataURL} /> : false;
     return (
-      <div style={styles.base} className='react-image-publisher'>
-        <div style={styles.fileDrop} className="file-drop-area" onDragOver={this.dragOver} onDragEnd={this.dragEnd} onDrop={this.drop}>
+      <div className='react-image-publisher'>
+        <div className="file-drop-area" onDragOver={this.dragOver} onDragEnd={this.dragEnd} onDrop={this.drop}>
           <div className="fileDropState">{fileDropState || "drop file"}</div>
           {imgPreview}
         </div>
-        <button style={styles.button} className='upload-to-bitstore' onClick={this.uploadToBitstore}>Upload To Bitstore</button>
-        <button style={styles.button} className='register-with-openpublish' onClick={this.registerWithOpenPublish}>Register With Open Publish</button>
+        <button className='upload-to-bitstore' onClick={this.uploadToBitstore}>Upload To Bitstore</button>
+        <button className='register-with-openpublish' onClick={this.registerWithOpenPublish}>Register With Open Publish</button>
       </div>
     )
   }

@@ -224,10 +224,10 @@ var ImagePublisher = React.createClass({
     var imgPreview = this.state.imgPreviewDataURL ? React.createElement('img', { style: styles.imagePreview, className: 'image-preview', src: this.state.imgPreviewDataURL }) : false;
     return React.createElement(
       'div',
-      { style: styles.base, className: 'react-image-publisher' },
+      { className: 'react-image-publisher' },
       React.createElement(
         'div',
-        { style: styles.fileDrop, className: 'file-drop-area', onDragOver: this.dragOver, onDragEnd: this.dragEnd, onDrop: this.drop },
+        { className: 'file-drop-area', onDragOver: this.dragOver, onDragEnd: this.dragEnd, onDrop: this.drop },
         React.createElement(
           'div',
           { className: 'fileDropState' },
@@ -237,12 +237,12 @@ var ImagePublisher = React.createClass({
       ),
       React.createElement(
         'button',
-        { style: styles.button, className: 'upload-to-bitstore', onClick: this.uploadToBitstore },
+        { className: 'upload-to-bitstore', onClick: this.uploadToBitstore },
         'Upload To Bitstore'
       ),
       React.createElement(
         'button',
-        { style: styles.button, className: 'register-with-openpublish', onClick: this.registerWithOpenPublish },
+        { className: 'register-with-openpublish', onClick: this.registerWithOpenPublish },
         'Register With Open Publish'
       )
     );
