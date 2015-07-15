@@ -31,6 +31,57 @@ var ImagePublisher = React.createClass({
       propagationStatus: ''
     };
   },
+  topUpBalance: function topUpBalance() {
+    var component = this;
+    var commonWallet = this.props.commonWallet;
+    var value; // wire up to UI
+    var destinationAddress; // wire up to UI
+    commonWallet.createTransactionForValueToDestinationAddress({
+      destinationAddress: destinationAddress,
+      value: value
+    }, function (err, signedTxHex) {
+      commonBlockchain.Transactions.Propagate(signedTxHex, function (err, receipt) {
+        if (err) {
+          return;
+        }
+        component.setState({
+          bitstoreState: 'waiting for confirmation'
+        });
+        var checkBitstoreBalance = function checkBitstoreBalance(options) {
+          var retryAttempts = options.retryAttempts;
+          bitstoreClient.wallet.get(function (err, res) {
+            var bitstoreBalance = res.body.balance;
+            var bitstoreDepositAddress = res.body.deposit_address;
+            component.setState({
+              bitstoreDepositAddress: bitstoreDepositAddress,
+              bitstoreBalance: bitstoreBalance
+            });
+            if (bitstoreBalance <= 0) {
+              component.setState({
+                bitstoreState: 'still waiting for confirmation'
+              });
+              return setTimeout(function () {
+                if (retryAttempts > 0) {
+                  return checkBitstoreBalance(retryAttempts--);
+                }
+                component.setState({
+                  bitstoreState: 'done waiting for confirmation'
+                });
+              }, 2000);
+            }
+            component.setState({
+              bitstoreState: 'confirmed',
+              fileDropState: 'scanned'
+            });
+          });
+        };
+
+        checkBitstoreBalance({
+          retryAttempts: 5
+        });
+      });
+    });
+  },
   registerWithOpenPublish: function registerWithOpenPublish() {
     var component = this;
     var onStartRegisterWithOpenPublish = this.props.onStartRegisterWithOpenPublish;
@@ -99,7 +150,7 @@ var ImagePublisher = React.createClass({
         });
         if (bitstoreBalance <= 0) {
           component.setState({
-            fileDropState: 'bitstore needs coin'
+            bitstoreState: 'no balance'
           });
           return;
         }
@@ -230,12 +281,15 @@ var bitcoin = require('bitcoinjs-lib');
 var randombytes = require('randombytes');
 var ImagePublisher = require('../dist.js');
 var commonBlockchain = require('blockcypher-unofficial')({
-  network: "testnet"
+  network: "testnet",
+  inBrowser: true
 });
 
 var simpleCommonWallet = function(options) {
 
-  var seed;
+  var seed, commonBlockchain;
+
+  commonBlockchain = options.commonBlockchain;
 
   if (options && options.seed) {
     seed = bitcoin.crypto.sha256(options.seed);
@@ -261,16 +315,22 @@ var simpleCommonWallet = function(options) {
     cb(false, signedTxHex, txid);
   };
 
-  var createTransaction = function(unspentOutputs, destinationAddress, value) {
-    unspentOutputs.forEach(function(utxo) {
-      utxo.txHash = utxo.txid;
-      utxo.index = utxo.vout;
+  var createTransactionForValueToDestinationAddress = function(options, callback) {
+    var value = options.value;
+    var destinationAddress = options.destinationAddress;
+    commonBlockchain.Addresses.Unspents([destinationAddress], function(err, addressesUnspents) {
+      var unspentOutputs = addressesUnspents[0];
+      unspentOutputs.forEach(function(utxo) {
+        utxo.txHash = utxo.txid;
+        utxo.index = utxo.vout;
+      });
+      wallet.setUnspentOutputs(unspentOutputs);
+      var newTx = wallet.createTx(destinationAddress, value, 1000, address);
+      var signedTx = wallet.signWith(newTx, [address]);
+      var signedTxHex = signedTx.toHex();
+      callback(err, signedTxHex);
     });
-    wallet.setUnspentOutputs(unspentOutputs);
-    var newTx = wallet.createTx(destinationAddress, value, 1000, address);
-    var signedTx = wallet.signWith(newTx, [address]);
-    var signedTxHex = signedTx.toHex();
-    return signedTxHex;
+
   };
 
   var commonWallet = {
@@ -278,14 +338,17 @@ var simpleCommonWallet = function(options) {
     signRawTransaction: signRawTransaction,
     signMessage: signMessage,
     address: address,
-    createTransaction: createTransaction
+    createTransactionForValueToDestinationAddress: createTransactionForValueToDestinationAddress
   };
 
   return commonWallet;
 
 };
 
-var commonWallet = simpleCommonWallet({seed:"test"});
+var commonWallet = simpleCommonWallet({
+  seed: "test",
+  commonBlockchain: commonBlockchain
+});
 
 React.render(
   React.createElement(ImagePublisher, { commonBlockchain: commonBlockchain, commonWallet: commonWallet}),

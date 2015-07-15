@@ -3,12 +3,15 @@ var bitcoin = require('bitcoinjs-lib');
 var randombytes = require('randombytes');
 var ImagePublisher = require('../dist.js');
 var commonBlockchain = require('blockcypher-unofficial')({
-  network: "testnet"
+  network: "testnet",
+  inBrowser: true
 });
 
 var simpleCommonWallet = function(options) {
 
-  var seed;
+  var seed, commonBlockchain;
+
+  commonBlockchain = options.commonBlockchain;
 
   if (options && options.seed) {
     seed = bitcoin.crypto.sha256(options.seed);
@@ -34,16 +37,22 @@ var simpleCommonWallet = function(options) {
     cb(false, signedTxHex, txid);
   };
 
-  var createTransaction = function(unspentOutputs, destinationAddress, value) {
-    unspentOutputs.forEach(function(utxo) {
-      utxo.txHash = utxo.txid;
-      utxo.index = utxo.vout;
+  var createTransactionForValueToDestinationAddress = function(options, callback) {
+    var value = options.value;
+    var destinationAddress = options.destinationAddress;
+    commonBlockchain.Addresses.Unspents([destinationAddress], function(err, addressesUnspents) {
+      var unspentOutputs = addressesUnspents[0];
+      unspentOutputs.forEach(function(utxo) {
+        utxo.txHash = utxo.txid;
+        utxo.index = utxo.vout;
+      });
+      wallet.setUnspentOutputs(unspentOutputs);
+      var newTx = wallet.createTx(destinationAddress, value, 1000, address);
+      var signedTx = wallet.signWith(newTx, [address]);
+      var signedTxHex = signedTx.toHex();
+      callback(err, signedTxHex);
     });
-    wallet.setUnspentOutputs(unspentOutputs);
-    var newTx = wallet.createTx(destinationAddress, value, 1000, address);
-    var signedTx = wallet.signWith(newTx, [address]);
-    var signedTxHex = signedTx.toHex();
-    return signedTxHex;
+
   };
 
   var commonWallet = {
@@ -51,14 +60,17 @@ var simpleCommonWallet = function(options) {
     signRawTransaction: signRawTransaction,
     signMessage: signMessage,
     address: address,
-    createTransaction: createTransaction
+    createTransactionForValueToDestinationAddress: createTransactionForValueToDestinationAddress
   };
 
   return commonWallet;
 
 };
 
-var commonWallet = simpleCommonWallet({seed:"test"});
+var commonWallet = simpleCommonWallet({
+  seed: "test",
+  commonBlockchain: commonBlockchain
+});
 
 React.render(
   React.createElement(ImagePublisher, { commonBlockchain: commonBlockchain, commonWallet: commonWallet}),
