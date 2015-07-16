@@ -29,6 +29,57 @@ var ImagePublisher = React.createClass({
       propagationStatus: ''
     };
   },
+  topUpBalance: function topUpBalance() {
+    var component = this;
+    var commonWallet = this.props.commonWallet;
+    var value; // wire up to UI
+    var destinationAddress; // wire up to UI
+    commonWallet.createTransactionForValueToDestinationAddress({
+      destinationAddress: destinationAddress,
+      value: value
+    }, function (err, signedTxHex) {
+      commonBlockchain.Transactions.Propagate(signedTxHex, function (err, receipt) {
+        if (err) {
+          return;
+        }
+        component.setState({
+          bitstoreState: 'waiting for confirmation'
+        });
+        var checkBitstoreBalance = function checkBitstoreBalance(options) {
+          var retryAttempts = options.retryAttempts;
+          bitstoreClient.wallet.get(function (err, res) {
+            var bitstoreBalance = res.body.balance;
+            var bitstoreDepositAddress = res.body.deposit_address;
+            component.setState({
+              bitstoreDepositAddress: bitstoreDepositAddress,
+              bitstoreBalance: bitstoreBalance
+            });
+            if (bitstoreBalance <= 0) {
+              component.setState({
+                bitstoreState: 'still waiting for confirmation'
+              });
+              return setTimeout(function () {
+                if (retryAttempts > 0) {
+                  return checkBitstoreBalance(retryAttempts--);
+                }
+                component.setState({
+                  bitstoreState: 'done waiting for confirmation'
+                });
+              }, 2000);
+            }
+            component.setState({
+              bitstoreState: 'confirmed',
+              fileDropState: 'scanned'
+            });
+          });
+        };
+
+        checkBitstoreBalance({
+          retryAttempts: 5
+        });
+      });
+    });
+  },
   registerWithOpenPublish: function registerWithOpenPublish() {
     var component = this;
     var onStartRegisterWithOpenPublish = this.props.onStartRegisterWithOpenPublish;
@@ -97,7 +148,7 @@ var ImagePublisher = React.createClass({
         });
         if (bitstoreBalance <= 0) {
           component.setState({
-            fileDropState: 'bitstore needs coin'
+            bitstoreState: 'no balance'
           });
           return;
         }
