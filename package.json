@@ -5,10 +5,10 @@
   "main": "dist.js",
   "scripts": {
     "build:src": "babel src/index.js > dist.js",
-    "build:example": "browserify ./example/example.js > ./example/dist.js",
+    "build:example": "npm run build:src && browserify ./example/example.js > ./example/dist.js",
     "build": "npm run build:src && npm run build:example",
     "test": "npm run build:src && tapes test/**/*.js | tap-spec",
-    "start": "http-server ./example/ -a 0.0.0.0 -p 9000 -c-1"
+    "start": "npm run build:example && http-server ./example/ -a 0.0.0.0 -p 9000 -c-1"
   },
   "repository": {
     "type": "git",
