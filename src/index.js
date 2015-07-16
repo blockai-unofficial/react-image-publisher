@@ -89,6 +89,8 @@ var ImagePublisher = React.createClass({
     var fileInfo = this.state.fileInfo;
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
+    // var title = document.querySelector('[name="title"]').value;
+    // var keywords = document.querySelector('[name="keywords"]').value;
     if (!bitstoreMeta || !bitstoreMeta.uri || fileDropState != "uploaded" || !fileInfo || !fileInfo.file || !fileSha1) {
       return;
     }
@@ -102,8 +104,8 @@ var ImagePublisher = React.createClass({
       uri: bitstoreMeta.uri,
       sha1: fileSha1,
       file: fileInfo.file,
-      //title: title, // get from UI
-      //keywords: keywoards, // get from UI
+      // title: title, // get from UI
+      // keywords: keywords, // get from UI
       commonWallet: commonWallet,
       commonBlockchain: commonBlockchain
     }, function(err, openPublishReceipt) {
@@ -238,6 +240,7 @@ var ImagePublisher = React.createClass({
   render: function () {
     var fileDropState = this.state.fileDropState;
     var imgPreview = this.state.imgPreviewDataURL ? <img className="image-preview" src={this.state.imgPreviewDataURL} /> : false;
+    var bitstoreMeta = this.state.bitstoreMeta;
     return (
       <InlineCss stylesheet="
         & * {
@@ -246,6 +249,27 @@ var ImagePublisher = React.createClass({
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           text-rendering: optimizeLegibility;
+          font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
+        }
+        & ::selection {
+          color: #FFFFFF;
+          background: rgba(52, 73, 94, 0.99);
+          text-shadow: none;
+        }
+        & ul {
+          padding: 0;
+        }
+        & li {
+          list-style-type: none;
+        }
+        & .section {
+          margin-bottom: 52px;
+        }
+        & .section:last-child {
+          margin-bottom: 0;
+        }
+        & .react-image-publisher {
+          height: 100%;
         }
         & .file-drop-area {
           position: relative;
@@ -266,21 +290,53 @@ var ImagePublisher = React.createClass({
         & .file-drop-area:hover {
           border-color: #5DADE2;
         }
-        & .file-drop-state {
-          margin-bottom: 18px;
-          height: 18px;
+        & .container {
+          max-width: 500px;
+          margin: auto;
+        }
+        & .guide p {
           color: #34495E;
-          font-size: 16px;
-          font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
-          text-align: right;
+          font-size: 18px;
+          line-height: 1.72222;
+          margin: 0 0 15px 0;
+        }
+        & .guide p:last-child {
+          margin: 0;
+        }
+        & .guide a {
+          color: #4169E1;
+        }
+        & .guide-note {
+          font-weight: bold;
+        }
+        & .input-group {
+          display: flex;
+          width: 100%;
+          margin-bottom: 8px;
         }
         & .input {
           display: block;
-          width: 100%;
-          height: 42px;
-          padding: 8px 12px;
-          margin-bottom: 8px;
+          flex: 8;
+          height: 62px;
+          padding: 8px 18px;
           border: 2px solid #BDC3C7;
+          font-size: 15px;
+          color: #34495E;
+        }
+        & .input:focus{
+          border-color: #1ABC9C;
+          outline: none;
+        }
+        & .label {
+          display: flex;
+          flex: 2;
+          justify-content: left;
+          align-items: center;
+          height: 62px;
+          padding: 0px 0px 0px 16px;
+          border-top: 2px solid #BDC3C7;
+          border-bottom: 2px solid #BDC3C7;
+          border-left: 2px solid #BDC3C7;
           font-size: 15px;
           font-weight: bold;
           color: #34495E;
@@ -288,27 +344,191 @@ var ImagePublisher = React.createClass({
         & .button {
           position: relative;
           display: flex;
-          margin-left: auto;
-          padding: 10px 19px;
-          font-size: 17px;
+          justify-content: center;
+          width: 100%;
+          margin-bottom: 32px;
+          padding: 14px 8px;
+          font-size: 32px;
           border: none;
-          background-color: #2ECC71;
+          background-color: #1ABC9C;
           color: #FFFFFF;
           cursor: pointer;
         }
+        & .button:hover {
+          background-color: #48C9B0;
+        }
+        & .button:focus {
+          outline: none;
+        }
+        & .title {
+          margin: 2px 0 20px;
+          color: #34495E;
+          font: bold 23px/40px 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
+        }
         & .image-preview {
-          max-height: 194px;
+          display: flex;
+          margin: auto;
+          max-width: 100%;
+          max-height: 500px;
+          border-style: dashed;
+          border-color: #5DADE2;
+        }
+        & .info {
+          margin: 18px 0 0 0;
+          color: #34495E;
+        }
+        & .info-table li {
+          display: flex;
+          height: 52px;
+          border-top: 2px solid #BDC3C7;
+          border-left: 2px solid #BDC3C7;
+          border-right: 2px solid #BDC3C7;
+        }
+        & .info-table li:last-child {
+          border-bottom: 2px solid #BDC3C7;
+        }
+        & .info-table-title {
+          display: flex;
+          flex: 2.4;
+          align-items: center;
+          padding: 0px 0px 0px 16px;
+          border-right: 2px solid #BDC3C7;
+          font-weight: bold;
+          text-align: left;
+        }
+        & .info-table-result {
+          display: flex;
+          flex: 8;
+          align-items: center;
+          padding: 0px 16px 0px 16px;
+        }
+        & .info-table-result a {
+          display: block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          color: #4169E1;
         }
       ">
         <div className='react-image-publisher'>
-          <div className="file-drop-state" style={{visibility: fileDropState ? 'visible' : 'hidden'}}>{fileDropState ? "File is " + fileDropState : false}</div>
-          <div className="file-drop-area" onDragOver={this.dragOver} onDragEnd={this.dragEnd} onDrop={this.drop} style={{borderColor: fileDropState === "scanned" || fileDropState === "uploaded" ? '#2ECC71' : ''}}>
-            { imgPreview ? {imgPreview} : 'Drop file here to upload' }
+
+          <div
+            className='file-drop-area'
+            onDragOver={this.dragOver}
+            onDragEnd={this.dragEnd}
+            onDrop={this.drop}
+            style={{ borderColor: fileDropState === "scanned" || fileDropState === "uploaded" || fileDropState === "registered" ? '#1ABC9C' : ''}}
+          >
+            <div className='file-drop-state'>
+              {fileDropState ? "File is " + fileDropState : 'Drop file here to begin'}
+            </div>
           </div>
-          <button className='upload-to-bitstore button' onClick={this.uploadToBitstore} style={{display: fileDropState != "scanned" ? 'none' : ''}}>Upload To Bitstore</button>
-          <button className='register-with-openpublish button' onClick={this.registerWithOpenPublish} style={{display: fileDropState != "uploaded" ? 'none' : ''}}>Register With Open Publish</button>
+
+          <div className='container'>
+
+            <div className='guide section'>
+
+              <div className='guide-state-none' style={{display: !fileDropState ? '' : 'none'}}>
+                <p>Welcome to the Bitstore Image Publisher.  To get started simply drag and drop a file into the highlighed area.</p>
+                <p className="guide-note">Note: You must have XX amount of Bitstore credit to upload a file to Bitstore.</p>
+              </div>
+
+              <div className='guide-state-scanned' style={{display: fileDropState === "scanned" ? '' : 'none'}}>
+                <p>Great job!  Your file has been scanned and is now ready to be uploaded to Bitstore.</p>
+              </div>
+
+              <div className='guide-state-uploaded' style={{display: fileDropState === "uploaded" ? '' : 'none'}}>
+                <p>Awesome work!  Your file has been uploaded to Bitstore and is now ready to be published to <a href='http://openpublishapp.com/' target='_blank'>OpenPublish</a>.</p>
+              </div>
+
+              <div className='guide-state-registered' style={{display: fileDropState === "registered" ? '' : 'none'}}>
+                <p>Your file has been published on <a href='http://openpublishapp.com/' target='_blank'>OpenPublish</a> and is now ready to use!</p>
+              </div>
+
+            </div>
+
+            <button className='upload-to-bitstore button' onClick={this.uploadToBitstore} style={{display: fileDropState != "scanned" ? 'none' : ''}}>
+              Upload To Bitstore
+            </button>
+
+            <button className='register-with-openpublish button' onClick={this.registerWithOpenPublish} style={{display: fileDropState != "uploaded" ? 'none' : ''}}>
+              Register With OpenPublish
+            </button>
+
+            <div className='inputs section' style={{display: fileDropState != "uploaded" ? 'none' : ''}}>
+
+              <div className='input-group'>
+                <label className='label'>Title</label>
+                <Input type='text' name='title' />
+              </div>
+
+              <div className='input-group'>
+                <label className='label'>Keywords</label>
+                <Input type='text' name='keywords' />
+              </div>
+
+            </div>
+
+            <div className='preview section' style={{display: fileDropState === "scanned" || fileDropState === "uploaded" ? '' : 'none'}}>
+              <h3 className='title'>File Preview</h3>
+              {imgPreview}
+            </div>
+
+            <div className='embed section' style={{display: fileDropState === "registered" ? '' : 'none'}}>
+              <h3 className='title'>Embed File</h3>
+              //embed component will go here
+              <div className='embed-component'></div>
+            </div>
+
+            <div className='info section' style={{display: bitstoreMeta && fileDropState === "uploaded" ? 'block' : 'none'}}>
+              <h3 className='title'>File Info</h3>
+              <ul className='info-table'>
+                <li>
+                  <div className='info-table-title'>Type</div>
+                  <div className='info-table-result'>{bitstoreMeta.mimetype}</div>
+                </li>
+                <li>
+                  <div className='info-table-title'>Size</div>
+                  <div className='info-table-result'>{bitstoreMeta.size}</div>
+                </li>
+                <li>
+                  <div className='info-table-title'>Downloads</div>
+                  <div className='info-table-result'>{bitstoreMeta.downloads}</div>
+                </li>
+                <li>
+                  <div className='info-table-title'>Web URL</div>
+                  <div className='info-table-result'> <a href={bitstoreMeta.uri} target='_blank'>{bitstoreMeta.uri}</a> </div>
+                </li>
+                <li>
+                  <div className='info-table-title'>Torrent URL</div>
+                  <div className='info-table-result'><a href={bitstoreMeta.torrent} target='_blank'>{bitstoreMeta.torrent}</a></div>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </InlineCss>
+    )
+  }
+});
+
+var Input = React.createClass({
+  getInitialState: function() {
+    return {
+      value: ""
+    }
+  },
+  handleChange: function(event) {
+    var component = this;
+    component.setState({
+      value: event.target.value
+    });
+  },
+  render: function () {
+    var value = this.state.value;
+    var handleChange = this.handleChange;
+    return (
+      <input className='input' type={this.props.type} name={this.props.name} onChange={handleChange} value={value} />
     )
   }
 });
