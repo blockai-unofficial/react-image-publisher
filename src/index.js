@@ -89,8 +89,8 @@ var ImagePublisher = React.createClass({
     var fileInfo = this.state.fileInfo;
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
-    // var title = document.querySelector('[name="title"]').value;
-    // var keywords = document.querySelector('[name="keywords"]').value;
+    var title = React.findDOMNode(this.refs.title).value;
+    var keywords = React.findDOMNode(this.refs.keywords).value;
     if (!bitstoreMeta || !bitstoreMeta.uri || fileDropState != "uploaded" || !fileInfo || !fileInfo.file || !fileSha1) {
       return;
     }
@@ -104,8 +104,8 @@ var ImagePublisher = React.createClass({
       uri: bitstoreMeta.uri,
       sha1: fileSha1,
       file: fileInfo.file,
-      // title: title, // get from UI
-      // keywords: keywords, // get from UI
+      title: title, // get from UI
+      keywords: keywords, // get from UI
       commonWallet: commonWallet,
       commonBlockchain: commonBlockchain
     }, function(err, openPublishReceipt) {
@@ -273,9 +273,13 @@ var ImagePublisher = React.createClass({
         }
         & .file-drop-area {
           position: relative;
+          display: -webkit-box;
+          display: -moz-box;
+          display: -ms-flexbox;
+          display: -webkit-flex;
           display: flex;
           align-items: center;
-          justify-content: center;
+          -webkit-box-align: center;
           width: 100%;
           height: 200px;
           margin-bottom: 32px;
@@ -289,6 +293,11 @@ var ImagePublisher = React.createClass({
         }
         & .file-drop-area:hover {
           border-color: #5DADE2;
+        }
+        & .file-drop-state {
+          width: 100%;
+          text-align: center;
+          -webkit-box-align: center;
         }
         & .container {
           max-width: 500px;
@@ -310,6 +319,10 @@ var ImagePublisher = React.createClass({
           font-weight: bold;
         }
         & .input-group {
+          display: -webkit-box;
+          display: -moz-box;
+          display: -ms-flexbox;
+          display: -webkit-flex;
           display: flex;
           width: 100%;
           margin-bottom: 8px;
@@ -328,9 +341,12 @@ var ImagePublisher = React.createClass({
           outline: none;
         }
         & .label {
+          display: -webkit-box;
+          display: -moz-box;
+          display: -ms-flexbox;
+          display: -webkit-flex;
           display: flex;
           flex: 2;
-          justify-content: left;
           align-items: center;
           height: 62px;
           padding: 0px 0px 0px 16px;
@@ -343,8 +359,6 @@ var ImagePublisher = React.createClass({
         }
         & .button {
           position: relative;
-          display: flex;
-          justify-content: center;
           width: 100%;
           margin-bottom: 32px;
           padding: 14px 8px;
@@ -353,6 +367,7 @@ var ImagePublisher = React.createClass({
           background-color: #1ABC9C;
           color: #FFFFFF;
           cursor: pointer;
+          text-align: center;
         }
         & .button:hover {
           background-color: #48C9B0;
@@ -366,6 +381,10 @@ var ImagePublisher = React.createClass({
           font: bold 23px/40px 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
         }
         & .image-preview {
+          display: -webkit-box;
+          display: -moz-box;
+          display: -ms-flexbox;
+          display: -webkit-flex;
           display: flex;
           margin: auto;
           max-width: 100%;
@@ -378,6 +397,10 @@ var ImagePublisher = React.createClass({
           color: #34495E;
         }
         & .info-table li {
+          display: -webkit-box;
+          display: -moz-box;
+          display: -ms-flexbox;
+          display: -webkit-flex;
           display: flex;
           height: 52px;
           border-top: 2px solid #BDC3C7;
@@ -388,6 +411,10 @@ var ImagePublisher = React.createClass({
           border-bottom: 2px solid #BDC3C7;
         }
         & .info-table-title {
+          display: -webkit-box;
+          display: -moz-box;
+          display: -ms-flexbox;
+          display: -webkit-flex;
           display: flex;
           flex: 2.4;
           align-items: center;
@@ -397,6 +424,10 @@ var ImagePublisher = React.createClass({
           text-align: left;
         }
         & .info-table-result {
+          display: -webkit-box;
+          display: -moz-box;
+          display: -ms-flexbox;
+          display: -webkit-flex;
           display: flex;
           flex: 8;
           align-items: center;
@@ -404,6 +435,7 @@ var ImagePublisher = React.createClass({
         }
         & .info-table-result a {
           display: block;
+          width: 318px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -459,12 +491,12 @@ var ImagePublisher = React.createClass({
 
               <div className='input-group'>
                 <label className='label'>Title</label>
-                <Input type='text' name='title' />
+                <input className='input' type='text' name='title' ref='title' />
               </div>
 
               <div className='input-group'>
                 <label className='label'>Keywords</label>
-                <Input type='text' name='keywords' />
+                <input className='input' type='text' name='keywords' ref='keywords' />
               </div>
 
             </div>

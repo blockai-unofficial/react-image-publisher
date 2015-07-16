@@ -90,8 +90,8 @@ var ImagePublisher = React.createClass({
     var fileInfo = this.state.fileInfo;
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
-    // var title = document.querySelector('[name="title"]').value;
-    // var keywords = document.querySelector('[name="keywords"]').value;
+    var title = React.findDOMNode(this.refs.title).value;
+    var keywords = React.findDOMNode(this.refs.keywords).value;
     if (!bitstoreMeta || !bitstoreMeta.uri || fileDropState != 'uploaded' || !fileInfo || !fileInfo.file || !fileSha1) {
       return;
     }
@@ -105,8 +105,8 @@ var ImagePublisher = React.createClass({
       uri: bitstoreMeta.uri,
       sha1: fileSha1,
       file: fileInfo.file,
-      // title: title, // get from UI
-      // keywords: keywords, // get from UI
+      title: title, // get from UI
+      keywords: keywords, // get from UI
       commonWallet: commonWallet,
       commonBlockchain: commonBlockchain
     }, function (err, openPublishReceipt) {
@@ -243,7 +243,7 @@ var ImagePublisher = React.createClass({
     var bitstoreMeta = this.state.bitstoreMeta;
     return React.createElement(
       InlineCss,
-      { stylesheet: ' & * { box-sizing: border-box; font-smoothing: antialiased; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & ::selection { color: #FFFFFF; background: rgba(52, 73, 94, 0.99); text-shadow: none; } & ul { padding: 0; } & li { list-style-type: none; } & .section { margin-bottom: 52px; } & .section:last-child { margin-bottom: 0; } & .react-image-publisher { height: 100%; } & .file-drop-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 200px; margin-bottom: 32px; padding: 3px 0 3px 0; border-style: dashed; border-color: #4169E1; background-color: #F2F3F4; color: #34495E; font-size: 32px; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .file-drop-area:hover { border-color: #5DADE2; } & .container { max-width: 500px; margin: auto; } & .guide p { color: #34495E; font-size: 18px; line-height: 1.72222; margin: 0 0 15px 0; } & .guide p:last-child { margin: 0; } & .guide a { color: #4169E1; } & .guide-note { font-weight: bold; } & .input-group { display: flex; width: 100%; margin-bottom: 8px; } & .input { display: block; flex: 8; height: 62px; padding: 8px 18px; border: 2px solid #BDC3C7; font-size: 15px; color: #34495E; } & .input:focus{ border-color: #1ABC9C; outline: none; } & .label { display: flex; flex: 2; justify-content: left; align-items: center; height: 62px; padding: 0px 0px 0px 16px; border-top: 2px solid #BDC3C7; border-bottom: 2px solid #BDC3C7; border-left: 2px solid #BDC3C7; font-size: 15px; font-weight: bold; color: #34495E; } & .button { position: relative; display: flex; justify-content: center; width: 100%; margin-bottom: 32px; padding: 14px 8px; font-size: 32px; border: none; background-color: #1ABC9C; color: #FFFFFF; cursor: pointer; } & .button:hover { background-color: #48C9B0; } & .button:focus { outline: none; } & .title { margin: 2px 0 20px; color: #34495E; font: bold 23px/40px \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .image-preview { display: flex; margin: auto; max-width: 100%; max-height: 500px; border-style: dashed; border-color: #5DADE2; } & .info { margin: 18px 0 0 0; color: #34495E; } & .info-table li { display: flex; height: 52px; border-top: 2px solid #BDC3C7; border-left: 2px solid #BDC3C7; border-right: 2px solid #BDC3C7; } & .info-table li:last-child { border-bottom: 2px solid #BDC3C7; } & .info-table-title { display: flex; flex: 2.4; align-items: center; padding: 0px 0px 0px 16px; border-right: 2px solid #BDC3C7; font-weight: bold; text-align: left; } & .info-table-result { display: flex; flex: 8; align-items: center; padding: 0px 16px 0px 16px; } & .info-table-result a { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #4169E1; } ' },
+      { stylesheet: ' & * { box-sizing: border-box; font-smoothing: antialiased; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & ::selection { color: #FFFFFF; background: rgba(52, 73, 94, 0.99); text-shadow: none; } & ul { padding: 0; } & li { list-style-type: none; } & .section { margin-bottom: 52px; } & .section:last-child { margin-bottom: 0; } & .react-image-publisher { height: 100%; } & .file-drop-area { position: relative; display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; align-items: center; -webkit-box-align: center; width: 100%; height: 200px; margin-bottom: 32px; padding: 3px 0 3px 0; border-style: dashed; border-color: #4169E1; background-color: #F2F3F4; color: #34495E; font-size: 32px; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .file-drop-area:hover { border-color: #5DADE2; } & .file-drop-state { width: 100%; text-align: center; -webkit-box-align: center; } & .container { max-width: 500px; margin: auto; } & .guide p { color: #34495E; font-size: 18px; line-height: 1.72222; margin: 0 0 15px 0; } & .guide p:last-child { margin: 0; } & .guide a { color: #4169E1; } & .guide-note { font-weight: bold; } & .input-group { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; width: 100%; margin-bottom: 8px; } & .input { display: block; flex: 8; height: 62px; padding: 8px 18px; border: 2px solid #BDC3C7; font-size: 15px; color: #34495E; } & .input:focus{ border-color: #1ABC9C; outline: none; } & .label { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; flex: 2; align-items: center; height: 62px; padding: 0px 0px 0px 16px; border-top: 2px solid #BDC3C7; border-bottom: 2px solid #BDC3C7; border-left: 2px solid #BDC3C7; font-size: 15px; font-weight: bold; color: #34495E; } & .button { position: relative; width: 100%; margin-bottom: 32px; padding: 14px 8px; font-size: 32px; border: none; background-color: #1ABC9C; color: #FFFFFF; cursor: pointer; text-align: center; } & .button:hover { background-color: #48C9B0; } & .button:focus { outline: none; } & .title { margin: 2px 0 20px; color: #34495E; font: bold 23px/40px \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .image-preview { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; margin: auto; max-width: 100%; max-height: 500px; border-style: dashed; border-color: #5DADE2; } & .info { margin: 18px 0 0 0; color: #34495E; } & .info-table li { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; height: 52px; border-top: 2px solid #BDC3C7; border-left: 2px solid #BDC3C7; border-right: 2px solid #BDC3C7; } & .info-table li:last-child { border-bottom: 2px solid #BDC3C7; } & .info-table-title { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; flex: 2.4; align-items: center; padding: 0px 0px 0px 16px; border-right: 2px solid #BDC3C7; font-weight: bold; text-align: left; } & .info-table-result { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; flex: 8; align-items: center; padding: 0px 16px 0px 16px; } & .info-table-result a { display: block; width: 318px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #4169E1; } ' },
       React.createElement(
         'div',
         { className: 'react-image-publisher' },
@@ -343,7 +343,7 @@ var ImagePublisher = React.createClass({
                 { className: 'label' },
                 'Title'
               ),
-              React.createElement(Input, { type: 'text', name: 'title' })
+              React.createElement('input', { className: 'input', type: 'text', name: 'title', ref: 'title' })
             ),
             React.createElement(
               'div',
@@ -353,7 +353,7 @@ var ImagePublisher = React.createClass({
                 { className: 'label' },
                 'Keywords'
               ),
-              React.createElement(Input, { type: 'text', name: 'keywords' })
+              React.createElement('input', { className: 'input', type: 'text', name: 'keywords', ref: 'keywords' })
             )
           ),
           React.createElement(
