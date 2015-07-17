@@ -90,8 +90,6 @@ var ImagePublisher = React.createClass({
     var fileInfo = this.state.fileInfo;
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
-    // var title = document.querySelector('[name="title"]').value;
-    // var keywords = document.querySelector('[name="keywords"]').value;
     if (!bitstoreMeta || !bitstoreMeta.uri || fileDropState != 'uploaded' || !fileInfo || !fileInfo.file || !fileSha1) {
       return;
     }
@@ -243,7 +241,7 @@ var ImagePublisher = React.createClass({
     var bitstoreMeta = this.state.bitstoreMeta;
     return React.createElement(
       InlineCss,
-      { stylesheet: ' & * { box-sizing: border-box; font-smoothing: antialiased; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & ::selection { color: #FFFFFF; background: rgba(52, 73, 94, 0.99); text-shadow: none; } & ul { padding: 0; } & li { list-style-type: none; } & .section { margin-bottom: 52px; } & .section:last-child { margin-bottom: 0; } & .react-image-publisher { height: 100%; } & .file-drop-area { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 200px; margin-bottom: 32px; padding: 3px 0 3px 0; border-style: dashed; border-color: #4169E1; background-color: #F2F3F4; color: #34495E; font-size: 32px; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .file-drop-area:hover { border-color: #5DADE2; } & .container { max-width: 500px; margin: auto; } & .guide p { color: #34495E; font-size: 18px; line-height: 1.72222; margin: 0 0 15px 0; } & .guide p:last-child { margin: 0; } & .guide a { color: #4169E1; } & .guide-note { font-weight: bold; } & .input-group { display: flex; width: 100%; margin-bottom: 8px; } & .input { display: block; flex: 8; height: 62px; padding: 8px 18px; border: 2px solid #BDC3C7; font-size: 15px; color: #34495E; } & .input:focus{ border-color: #1ABC9C; outline: none; } & .label { display: flex; flex: 2; justify-content: left; align-items: center; height: 62px; padding: 0px 0px 0px 16px; border-top: 2px solid #BDC3C7; border-bottom: 2px solid #BDC3C7; border-left: 2px solid #BDC3C7; font-size: 15px; font-weight: bold; color: #34495E; } & .button { position: relative; display: flex; justify-content: center; width: 100%; margin-bottom: 32px; padding: 14px 8px; font-size: 32px; border: none; background-color: #1ABC9C; color: #FFFFFF; cursor: pointer; } & .button:hover { background-color: #48C9B0; } & .button:focus { outline: none; } & .title { margin: 2px 0 20px; color: #34495E; font: bold 23px/40px \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .image-preview { display: flex; margin: auto; max-width: 100%; max-height: 500px; border-style: dashed; border-color: #5DADE2; } & .info { margin: 18px 0 0 0; color: #34495E; } & .info-table li { display: flex; height: 52px; border-top: 2px solid #BDC3C7; border-left: 2px solid #BDC3C7; border-right: 2px solid #BDC3C7; } & .info-table li:last-child { border-bottom: 2px solid #BDC3C7; } & .info-table-title { display: flex; flex: 2.4; align-items: center; padding: 0px 0px 0px 16px; border-right: 2px solid #BDC3C7; font-weight: bold; text-align: left; } & .info-table-result { display: flex; flex: 8; align-items: center; padding: 0px 16px 0px 16px; } & .info-table-result a { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #4169E1; } ' },
+      { stylesheet: ' & * { box-sizing: border-box; font-smoothing: antialiased; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & ::selection { color: #FFFFFF; background: rgba(52, 73, 94, 0.99); text-shadow: none; } & ul { padding: 0; } & li { list-style-type: none; } & .section { margin-bottom: 52px; } & .section:last-child { margin-bottom: 0; } & .react-image-publisher { height: 100%; } & .file-drop-area { position: relative; display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; align-items: center; width: 100%; height: 200px; margin-bottom: 32px; padding: 3px 0 3px 0; border-style: dashed; border-color: #4169E1; background-color: #F2F3F4; color: #34495E; font-size: 32px; font-family: \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .file-drop-area:hover { border-color: #5DADE2; } & .file-drop-state { width: 100%; -webkit-align-self: center; text-align: center; } & .container { max-width: 500px; margin: auto; } & .guide p { color: #34495E; font-size: 18px; line-height: 1.72222; margin: 0 0 15px 0; } & .guide p:last-child { margin: 0; } & .guide a { color: #4169E1; } & .guide-note { font-weight: bold; } & .input-group { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; width: 100%; margin-bottom: 8px; } & .input { display: block; flex: 8; -webkit-flex: 8; width: 80%; height: 62px; margin: 0; padding: 8px 18px; border: 2px solid #BDC3C7; font-size: 15px; color: #34495E; } & .input:focus{ border-color: #1ABC9C; outline: none; } & .label { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; flex: 2; -webkit-flex: 2; -webkit-align-self: center; -webkit-align-items: center; align-items: center; width: 20%; height: 62px; padding: 0px 0px 0px 16px; border-top: 2px solid #BDC3C7; border-bottom: 2px solid #BDC3C7; border-left: 2px solid #BDC3C7; font-size: 15px; font-weight: bold; color: #34495E; } & .button { position: relative; width: 100%; margin-bottom: 32px; padding: 14px 8px; font-size: 32px; border: none; background-color: #1ABC9C; color: #FFFFFF; cursor: pointer; text-align: center; } & .button:hover { background-color: #48C9B0; } & .button:focus { outline: none; } & .title { margin: 2px 0 20px; color: #34495E; font: bold 23px/40px \'Helvetica Neue\', Helvetica, Roboto, Arial, sans-serif; } & .image-preview { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; margin: auto; max-width: 100%; max-height: 500px; border-style: dashed; border-color: #5DADE2; } & .info { margin: 18px 0 0 0; color: #34495E; } & .info-table li { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; height: 52px; border-top: 2px solid #BDC3C7; border-left: 2px solid #BDC3C7; border-right: 2px solid #BDC3C7; } & .info-table li:last-child { border-bottom: 2px solid #BDC3C7; } & .info-table-title { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; flex: 2.4; -webkit-flex: 2.4; height: 100%; align-items: center; -webkit-align-self: center; -webkit-align-items: center; padding: 0px 0px 0px 16px; border-right: 2px solid #BDC3C7; font-weight: bold; text-align: left; } & .info-table-result { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; flex: 8; -webkit-flex: 8; height: 100%; align-items: center; -webkit-align-self: center; -webkit-align-items: center; padding: 0px 16px 0px 16px; } & .info-table-result a { display: block; width: 318px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #4169E1; } ' },
       React.createElement(
         'div',
         { className: 'react-image-publisher' },
@@ -265,63 +263,7 @@ var ImagePublisher = React.createClass({
         React.createElement(
           'div',
           { className: 'container' },
-          React.createElement(
-            'div',
-            { className: 'guide section' },
-            React.createElement(
-              'div',
-              { className: 'guide-state-none', style: { display: !fileDropState ? '' : 'none' } },
-              React.createElement(
-                'p',
-                null,
-                'Welcome to the Bitstore Image Publisher.  To get started simply drag and drop a file into the highlighed area.'
-              ),
-              React.createElement(
-                'p',
-                { className: 'guide-note' },
-                'Note: You must have XX amount of Bitstore credit to upload a file to Bitstore.'
-              )
-            ),
-            React.createElement(
-              'div',
-              { className: 'guide-state-scanned', style: { display: fileDropState === 'scanned' ? '' : 'none' } },
-              React.createElement(
-                'p',
-                null,
-                'Great job!  Your file has been scanned and is now ready to be uploaded to Bitstore.'
-              )
-            ),
-            React.createElement(
-              'div',
-              { className: 'guide-state-uploaded', style: { display: fileDropState === 'uploaded' ? '' : 'none' } },
-              React.createElement(
-                'p',
-                null,
-                'Awesome work!  Your file has been uploaded to Bitstore and is now ready to be published to ',
-                React.createElement(
-                  'a',
-                  { href: 'http://openpublishapp.com/', target: '_blank' },
-                  'OpenPublish'
-                ),
-                '.'
-              )
-            ),
-            React.createElement(
-              'div',
-              { className: 'guide-state-registered', style: { display: fileDropState === 'registered' ? '' : 'none' } },
-              React.createElement(
-                'p',
-                null,
-                'Your file has been published on ',
-                React.createElement(
-                  'a',
-                  { href: 'http://openpublishapp.com/', target: '_blank' },
-                  'OpenPublish'
-                ),
-                ' and is now ready to use!'
-              )
-            )
-          ),
+          React.createElement(GuideText, { fileDropState: fileDropState }),
           React.createElement(
             'button',
             { className: 'upload-to-bitstore button', onClick: this.uploadToBitstore, style: { display: fileDropState != 'scanned' ? 'none' : '' } },
@@ -343,7 +285,7 @@ var ImagePublisher = React.createClass({
                 { className: 'label' },
                 'Title'
               ),
-              React.createElement(Input, { type: 'text', name: 'title' })
+              React.createElement('input', { className: 'input', type: 'text', name: 'title' })
             ),
             React.createElement(
               'div',
@@ -353,147 +295,219 @@ var ImagePublisher = React.createClass({
                 { className: 'label' },
                 'Keywords'
               ),
-              React.createElement(Input, { type: 'text', name: 'keywords' })
+              React.createElement('input', { className: 'input', type: 'text', name: 'keywords' })
             )
           ),
-          React.createElement(
-            'div',
-            { className: 'preview section', style: { display: fileDropState === 'scanned' || fileDropState === 'uploaded' ? '' : 'none' } },
-            React.createElement(
-              'h3',
-              { className: 'title' },
-              'File Preview'
-            ),
-            imgPreview
-          ),
-          React.createElement(
-            'div',
-            { className: 'embed section', style: { display: fileDropState === 'registered' ? '' : 'none' } },
-            React.createElement(
-              'h3',
-              { className: 'title' },
-              'Embed File'
-            ),
-            '//embed component will go here',
-            React.createElement('div', { className: 'embed-component' })
-          ),
-          React.createElement(
-            'div',
-            { className: 'info section', style: { display: bitstoreMeta && fileDropState === 'uploaded' ? 'block' : 'none' } },
-            React.createElement(
-              'h3',
-              { className: 'title' },
-              'File Info'
-            ),
-            React.createElement(
-              'ul',
-              { className: 'info-table' },
-              React.createElement(
-                'li',
-                null,
-                React.createElement(
-                  'div',
-                  { className: 'info-table-title' },
-                  'Type'
-                ),
-                React.createElement(
-                  'div',
-                  { className: 'info-table-result' },
-                  bitstoreMeta.mimetype
-                )
-              ),
-              React.createElement(
-                'li',
-                null,
-                React.createElement(
-                  'div',
-                  { className: 'info-table-title' },
-                  'Size'
-                ),
-                React.createElement(
-                  'div',
-                  { className: 'info-table-result' },
-                  bitstoreMeta.size
-                )
-              ),
-              React.createElement(
-                'li',
-                null,
-                React.createElement(
-                  'div',
-                  { className: 'info-table-title' },
-                  'Downloads'
-                ),
-                React.createElement(
-                  'div',
-                  { className: 'info-table-result' },
-                  bitstoreMeta.downloads
-                )
-              ),
-              React.createElement(
-                'li',
-                null,
-                React.createElement(
-                  'div',
-                  { className: 'info-table-title' },
-                  'Web URL'
-                ),
-                React.createElement(
-                  'div',
-                  { className: 'info-table-result' },
-                  ' ',
-                  React.createElement(
-                    'a',
-                    { href: bitstoreMeta.uri, target: '_blank' },
-                    bitstoreMeta.uri
-                  ),
-                  ' '
-                )
-              ),
-              React.createElement(
-                'li',
-                null,
-                React.createElement(
-                  'div',
-                  { className: 'info-table-title' },
-                  'Torrent URL'
-                ),
-                React.createElement(
-                  'div',
-                  { className: 'info-table-result' },
-                  React.createElement(
-                    'a',
-                    { href: bitstoreMeta.torrent, target: '_blank' },
-                    bitstoreMeta.torrent
-                  )
-                )
-              )
-            )
-          )
+          React.createElement(Preview, { fileDropState: fileDropState, filePreview: imgPreview }),
+          React.createElement(Embed, { fileDropState: fileDropState }),
+          React.createElement(BitstoreMetaTable, { fileDropState: fileDropState, bitstoreMeta: bitstoreMeta })
         )
       )
     );
   }
 });
 
-var Input = React.createClass({
-  displayName: 'Input',
-
-  getInitialState: function getInitialState() {
-    return {
-      value: ''
-    };
-  },
-  handleChange: function handleChange(event) {
-    var component = this;
-    component.setState({
-      value: event.target.value
-    });
-  },
+var GuideText = React.createClass({
+  displayName: 'GuideText',
   render: function render() {
-    var value = this.state.value;
-    var handleChange = this.handleChange;
-    return React.createElement('input', { className: 'input', type: this.props.type, name: this.props.name, onChange: handleChange, value: value });
+    var fileDropState = this.props.fileDropState;
+    return React.createElement(
+      'div',
+      { className: 'guide section' },
+      React.createElement(
+        'div',
+        { className: 'guide-state-none', style: { display: !fileDropState ? '' : 'none' } },
+        React.createElement(
+          'p',
+          null,
+          'Welcome to the Bitstore Image Publisher.  To get started simply drag and drop a file into the highlighed area.'
+        ),
+        React.createElement(
+          'p',
+          { className: 'guide-note' },
+          'Note: You must have XX amount of Bitstore credit to upload a file to Bitstore.'
+        )
+      ),
+      React.createElement(
+        'div',
+        { className: 'guide-state-scanned', style: { display: fileDropState === 'scanned' ? '' : 'none' } },
+        React.createElement(
+          'p',
+          null,
+          'Great job!  Your file has been scanned and is now ready to be uploaded to Bitstore.'
+        )
+      ),
+      React.createElement(
+        'div',
+        { className: 'guide-state-uploaded', style: { display: fileDropState === 'uploaded' ? '' : 'none' } },
+        React.createElement(
+          'p',
+          null,
+          'Awesome work!  Your file has been uploaded to Bitstore and is now ready to be published to ',
+          React.createElement(
+            'a',
+            { href: 'http://openpublishapp.com/', target: '_blank' },
+            'OpenPublish'
+          ),
+          '.'
+        )
+      ),
+      React.createElement(
+        'div',
+        { className: 'guide-state-registered', style: { display: fileDropState === 'registered' ? '' : 'none' } },
+        React.createElement(
+          'p',
+          null,
+          'Your file has been published on ',
+          React.createElement(
+            'a',
+            { href: 'http://openpublishapp.com/', target: '_blank' },
+            'OpenPublish'
+          ),
+          ' and is now ready to use!'
+        )
+      )
+    );
+  }
+});
+
+var Preview = React.createClass({
+  displayName: 'Preview',
+  render: function render() {
+    var fileDropState = this.props.fileDropState;
+    var imgPreview = this.props.filePreview;
+    return React.createElement(
+      'div',
+      { className: 'preview section', style: { display: fileDropState === 'scanned' || fileDropState === 'uploaded' ? '' : 'none' } },
+      React.createElement(
+        'h3',
+        { className: 'title' },
+        'File Preview'
+      ),
+      imgPreview
+    );
+  }
+});
+
+var Embed = React.createClass({
+  displayName: 'Embed',
+  render: function render() {
+    var fileDropState = this.props.fileDropState;
+    return React.createElement(
+      'div',
+      { className: 'embed section', style: { display: fileDropState === 'registered' ? '' : 'none' } },
+      React.createElement(
+        'h3',
+        { className: 'title' },
+        'Embed File'
+      ),
+      React.createElement(
+        'div',
+        { className: 'embed-component' },
+        'embed component will go here'
+      )
+    );
+  }
+});
+
+var BitstoreMetaTable = React.createClass({
+  displayName: 'BitstoreMetaTable',
+  render: function render() {
+    var fileDropState = this.props.fileDropState;
+    var bitstoreMeta = this.props.bitstoreMeta;
+    return React.createElement(
+      'div',
+      { className: 'info section', style: { display: bitstoreMeta && fileDropState === 'uploaded' ? 'block' : 'none' } },
+      React.createElement(
+        'h3',
+        { className: 'title' },
+        'File Info'
+      ),
+      React.createElement(
+        'ul',
+        { className: 'info-table' },
+        React.createElement(
+          'li',
+          null,
+          React.createElement(
+            'div',
+            { className: 'info-table-title' },
+            'Type'
+          ),
+          React.createElement(
+            'div',
+            { className: 'info-table-result' },
+            bitstoreMeta.mimetype
+          )
+        ),
+        React.createElement(
+          'li',
+          null,
+          React.createElement(
+            'div',
+            { className: 'info-table-title' },
+            'Size'
+          ),
+          React.createElement(
+            'div',
+            { className: 'info-table-result' },
+            bitstoreMeta.size
+          )
+        ),
+        React.createElement(
+          'li',
+          null,
+          React.createElement(
+            'div',
+            { className: 'info-table-title' },
+            'Downloads'
+          ),
+          React.createElement(
+            'div',
+            { className: 'info-table-result' },
+            bitstoreMeta.downloads
+          )
+        ),
+        React.createElement(
+          'li',
+          null,
+          React.createElement(
+            'div',
+            { className: 'info-table-title' },
+            'Web URL'
+          ),
+          React.createElement(
+            'div',
+            { className: 'info-table-result' },
+            ' ',
+            React.createElement(
+              'a',
+              { href: bitstoreMeta.uri, target: '_blank' },
+              bitstoreMeta.uri
+            ),
+            ' '
+          )
+        ),
+        React.createElement(
+          'li',
+          null,
+          React.createElement(
+            'div',
+            { className: 'info-table-title' },
+            'Torrent URL'
+          ),
+          React.createElement(
+            'div',
+            { className: 'info-table-result' },
+            React.createElement(
+              'a',
+              { href: bitstoreMeta.torrent, target: '_blank' },
+              bitstoreMeta.torrent
+            )
+          )
+        )
+      )
+    );
   }
 });
 
