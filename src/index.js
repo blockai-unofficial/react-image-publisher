@@ -5,6 +5,9 @@ var shasum = require('shasum');
 var InlineCss = require('react-inline-css');
 
 var BitstoreMetaTable = require('./bitstore-meta-table');
+var GuideText = require('./guide-text');
+var Preview = require('./preview');
+var Embed = require('./embed');
 
 var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
@@ -399,7 +402,6 @@ var ImagePublisher = React.createClass({
           border-color: #5DADE2;
         }
         & .info {
-          margin: 18px 0 0 0;
           color: #34495E;
         }
         & .info-table li {
@@ -496,11 +498,12 @@ var ImagePublisher = React.createClass({
 
             </div>
 
+            <BitstoreMetaTable fileDropState={fileDropState} bitstoreMeta={bitstoreMeta} />
+
             <Preview fileDropState={fileDropState} filePreview={imgPreview} />
 
             <Embed fileDropState={fileDropState} />
 
-            <BitstoreMetaTable fileDropState={fileDropState} bitstoreMeta={bitstoreMeta} />
 
           </div>
         </div>
@@ -508,63 +511,5 @@ var ImagePublisher = React.createClass({
     )
   }
 });
-
-var GuideText = React.createClass({
-  displayName: 'GuideText',
-  render: function () {
-    var fileDropState = this.props.fileDropState;
-    return (
-      <div className='guide section'>
-        <div className='guide-state-none' style={{display: !fileDropState ? '' : 'none'}}>
-          <p>Welcome to the Bitstore Image Publisher.  To get started simply drag and drop a file into the highlighed area.</p>
-          <p className="guide-note">Note: You must have XX amount of Bitstore credit to upload a file to Bitstore.</p>
-        </div>
-
-        <div className='guide-state-scanned' style={{display: fileDropState === "scanned" ? '' : 'none'}}>
-          <p>Great job!  Your file has been scanned and is now ready to be uploaded to Bitstore.</p>
-        </div>
-
-        <div className='guide-state-uploaded' style={{display: fileDropState === "uploaded" ? '' : 'none'}}>
-          <p>Awesome work!  Your file has been uploaded to Bitstore and is now ready to be published to <a href='http://openpublishapp.com/' target='_blank'>OpenPublish</a>.</p>
-        </div>
-
-        <div className='guide-state-registered' style={{display: fileDropState === "registered" ? '' : 'none'}}>
-          <p>Your file has been published on <a href='http://openpublishapp.com/' target='_blank'>OpenPublish</a> and is now ready to use!</p>
-        </div>
-      </div>
-    )
-  }
-});
-
-var Preview = React.createClass({
-  displayName: 'Preview',
-  render: function () {
-    var fileDropState = this.props.fileDropState;
-    var imgPreview = this.props.filePreview;
-    return (
-      <div className='preview section' style={{display: fileDropState === "scanned" || fileDropState === "uploaded" ? '' : 'none'}}>
-        <h3 className='title'>File Preview</h3>
-        {imgPreview}
-      </div>
-    )
-  }
-});
-
-var Embed = React.createClass({
-  displayName: 'Embed',
-  render: function () {
-    var fileDropState = this.props.fileDropState;
-    return (
-      <div className='embed section' style={{display: fileDropState === "registered" ? '' : 'none'}}>
-        <h3 className='title'>Embed File</h3>
-        <div className='embed-component'>
-          embed component will go here
-        </div>
-      </div>
-    )
-  }
-});
-
-
 
 module.exports = ImagePublisher
