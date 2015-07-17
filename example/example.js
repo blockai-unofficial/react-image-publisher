@@ -1,7 +1,7 @@
 var React = require('react');
 var bitcoin = require('bitcoinjs-lib');
 var randombytes = require('randombytes');
-var ImagePublisher = require('../dist.js');
+var ImagePublisher = require('../build');
 var commonBlockchain = require('blockcypher-unofficial')({
   network: "testnet",
   inBrowser: true

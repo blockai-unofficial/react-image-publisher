@@ -2,13 +2,11 @@
   "name": "react-image-publisher",
   "version": "0.0.3",
   "description": "A common blockchain React component for publishing images with Bitstore and Open Publish",
-  "main": "dist.js",
+  "main": "build/index.js",
   "scripts": {
-    "build:src": "babel src/index.js > dist.js",
-    "build:example": "npm run build:src && browserify ./example/example.js > ./example/dist.js",
-    "build": "npm run build:src && npm run build:example",
-    "test": "npm run build:src && tapes test/**/*.js | tap-spec",
-    "start": "npm run build:example && http-server ./example/ -a 0.0.0.0 -p 9000 -c-1"
+    "build": "make clean && make",
+    "test": "make && tapes test/**/*.js | tap-spec",
+    "start": "make example/build.js && http-server ./example/ -a 0.0.0.0 -p 9000 -c-1"
   },
   "repository": {
     "type": "git",
@@ -41,10 +39,11 @@
   },
   "devDependencies": {
     "babel": "^5.6.14",
+    "babelify": "^6.1.3",
     "bitcoinjs-lib": "^1.5.7",
     "blockcast": "^1.0.3",
-    "browserify": "^10.2.6",
     "blockcypher-unofficial": "^1.4.1",
+    "browserify": "^10.2.6",
     "file-api": "^0.10.4",
     "filereader": "^0.10.3",
     "http-server": "^0.8.0",
