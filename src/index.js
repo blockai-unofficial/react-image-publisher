@@ -89,8 +89,6 @@ var ImagePublisher = React.createClass({
     var fileInfo = this.state.fileInfo;
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
-    var title = React.findDOMNode(this.refs.title).value;
-    var keywords = React.findDOMNode(this.refs.keywords).value;
     if (!bitstoreMeta || !bitstoreMeta.uri || fileDropState != "uploaded" || !fileInfo || !fileInfo.file || !fileSha1) {
       return;
     }
@@ -104,8 +102,8 @@ var ImagePublisher = React.createClass({
       uri: bitstoreMeta.uri,
       sha1: fileSha1,
       file: fileInfo.file,
-      title: title, // get from UI
-      keywords: keywords, // get from UI
+      // title: title, // get from UI
+      // keywords: keywords, // get from UI
       commonWallet: commonWallet,
       commonBlockchain: commonBlockchain
     }, function(err, openPublishReceipt) {
@@ -279,7 +277,6 @@ var ImagePublisher = React.createClass({
           display: -webkit-flex;
           display: flex;
           align-items: center;
-          -webkit-box-align: center;
           width: 100%;
           height: 200px;
           margin-bottom: 32px;
@@ -296,8 +293,8 @@ var ImagePublisher = React.createClass({
         }
         & .file-drop-state {
           width: 100%;
+          -webkit-align-self: center;
           text-align: center;
-          -webkit-box-align: center;
         }
         & .container {
           max-width: 500px;
@@ -330,7 +327,10 @@ var ImagePublisher = React.createClass({
         & .input {
           display: block;
           flex: 8;
+          -webkit-flex: 8;
+          width: 80%;
           height: 62px;
+          margin: 0;
           padding: 8px 18px;
           border: 2px solid #BDC3C7;
           font-size: 15px;
@@ -347,7 +347,11 @@ var ImagePublisher = React.createClass({
           display: -webkit-flex;
           display: flex;
           flex: 2;
+          -webkit-flex: 2;
+          -webkit-align-self: center;
+          -webkit-align-items: center;
           align-items: center;
+          width: 20%;
           height: 62px;
           padding: 0px 0px 0px 16px;
           border-top: 2px solid #BDC3C7;
@@ -417,7 +421,11 @@ var ImagePublisher = React.createClass({
           display: -webkit-flex;
           display: flex;
           flex: 2.4;
+          -webkit-flex: 2.4;
+          height: 100%;
           align-items: center;
+          -webkit-align-self: center;
+          -webkit-align-items: center;
           padding: 0px 0px 0px 16px;
           border-right: 2px solid #BDC3C7;
           font-weight: bold;
@@ -430,7 +438,11 @@ var ImagePublisher = React.createClass({
           display: -webkit-flex;
           display: flex;
           flex: 8;
+          -webkit-flex: 8;
+          height: 100%;
           align-items: center;
+          -webkit-align-self: center;
+          -webkit-align-items: center;
           padding: 0px 16px 0px 16px;
         }
         & .info-table-result a {
@@ -458,26 +470,7 @@ var ImagePublisher = React.createClass({
 
           <div className='container'>
 
-            <div className='guide section'>
-
-              <div className='guide-state-none' style={{display: !fileDropState ? '' : 'none'}}>
-                <p>Welcome to the Bitstore Image Publisher.  To get started simply drag and drop a file into the highlighed area.</p>
-                <p className="guide-note">Note: You must have XX amount of Bitstore credit to upload a file to Bitstore.</p>
-              </div>
-
-              <div className='guide-state-scanned' style={{display: fileDropState === "scanned" ? '' : 'none'}}>
-                <p>Great job!  Your file has been scanned and is now ready to be uploaded to Bitstore.</p>
-              </div>
-
-              <div className='guide-state-uploaded' style={{display: fileDropState === "uploaded" ? '' : 'none'}}>
-                <p>Awesome work!  Your file has been uploaded to Bitstore and is now ready to be published to <a href='http://openpublishapp.com/' target='_blank'>OpenPublish</a>.</p>
-              </div>
-
-              <div className='guide-state-registered' style={{display: fileDropState === "registered" ? '' : 'none'}}>
-                <p>Your file has been published on <a href='http://openpublishapp.com/' target='_blank'>OpenPublish</a> and is now ready to use!</p>
-              </div>
-
-            </div>
+            <GuideText fileDropState={fileDropState} />
 
             <button className='upload-to-bitstore button' onClick={this.uploadToBitstore} style={{display: fileDropState != "scanned" ? 'none' : ''}}>
               Upload To Bitstore
@@ -491,52 +484,22 @@ var ImagePublisher = React.createClass({
 
               <div className='input-group'>
                 <label className='label'>Title</label>
-                <input className='input' type='text' name='title' ref='title' />
+                <input className='input' type='text' name='title' />
               </div>
 
               <div className='input-group'>
                 <label className='label'>Keywords</label>
-                <input className='input' type='text' name='keywords' ref='keywords' />
+                <input className='input' type='text' name='keywords' />
               </div>
 
             </div>
 
-            <div className='preview section' style={{display: fileDropState === "scanned" || fileDropState === "uploaded" ? '' : 'none'}}>
-              <h3 className='title'>File Preview</h3>
-              {imgPreview}
-            </div>
+            <Preview fileDropState={fileDropState} filePreview={imgPreview} />
 
-            <div className='embed section' style={{display: fileDropState === "registered" ? '' : 'none'}}>
-              <h3 className='title'>Embed File</h3>
-              //embed component will go here
-              <div className='embed-component'></div>
-            </div>
+            <Embed fileDropState={fileDropState} />
 
-            <div className='info section' style={{display: bitstoreMeta && fileDropState === "uploaded" ? 'block' : 'none'}}>
-              <h3 className='title'>File Info</h3>
-              <ul className='info-table'>
-                <li>
-                  <div className='info-table-title'>Type</div>
-                  <div className='info-table-result'>{bitstoreMeta.mimetype}</div>
-                </li>
-                <li>
-                  <div className='info-table-title'>Size</div>
-                  <div className='info-table-result'>{bitstoreMeta.size}</div>
-                </li>
-                <li>
-                  <div className='info-table-title'>Downloads</div>
-                  <div className='info-table-result'>{bitstoreMeta.downloads}</div>
-                </li>
-                <li>
-                  <div className='info-table-title'>Web URL</div>
-                  <div className='info-table-result'> <a href={bitstoreMeta.uri} target='_blank'>{bitstoreMeta.uri}</a> </div>
-                </li>
-                <li>
-                  <div className='info-table-title'>Torrent URL</div>
-                  <div className='info-table-result'><a href={bitstoreMeta.torrent} target='_blank'>{bitstoreMeta.torrent}</a></div>
-                </li>
-              </ul>
-            </div>
+            <BitstoreMetaTable fileDropState={fileDropState} bitstoreMeta={bitstoreMeta} />
+
           </div>
         </div>
       </InlineCss>
@@ -544,23 +507,93 @@ var ImagePublisher = React.createClass({
   }
 });
 
-var Input = React.createClass({
-  getInitialState: function() {
-    return {
-      value: ""
-    }
-  },
-  handleChange: function(event) {
-    var component = this;
-    component.setState({
-      value: event.target.value
-    });
-  },
+var GuideText = React.createClass({
+  displayName: 'GuideText',
   render: function () {
-    var value = this.state.value;
-    var handleChange = this.handleChange;
+    var fileDropState = this.props.fileDropState;
     return (
-      <input className='input' type={this.props.type} name={this.props.name} onChange={handleChange} value={value} />
+      <div className='guide section'>
+        <div className='guide-state-none' style={{display: !fileDropState ? '' : 'none'}}>
+          <p>Welcome to the Bitstore Image Publisher.  To get started simply drag and drop a file into the highlighed area.</p>
+          <p className="guide-note">Note: You must have XX amount of Bitstore credit to upload a file to Bitstore.</p>
+        </div>
+
+        <div className='guide-state-scanned' style={{display: fileDropState === "scanned" ? '' : 'none'}}>
+          <p>Great job!  Your file has been scanned and is now ready to be uploaded to Bitstore.</p>
+        </div>
+
+        <div className='guide-state-uploaded' style={{display: fileDropState === "uploaded" ? '' : 'none'}}>
+          <p>Awesome work!  Your file has been uploaded to Bitstore and is now ready to be published to <a href='http://openpublishapp.com/' target='_blank'>OpenPublish</a>.</p>
+        </div>
+
+        <div className='guide-state-registered' style={{display: fileDropState === "registered" ? '' : 'none'}}>
+          <p>Your file has been published on <a href='http://openpublishapp.com/' target='_blank'>OpenPublish</a> and is now ready to use!</p>
+        </div>
+      </div>
+    )
+  }
+});
+
+var Preview = React.createClass({
+  displayName: 'Preview',
+  render: function () {
+    var fileDropState = this.props.fileDropState;
+    var imgPreview = this.props.filePreview;
+    return (
+      <div className='preview section' style={{display: fileDropState === "scanned" || fileDropState === "uploaded" ? '' : 'none'}}>
+        <h3 className='title'>File Preview</h3>
+        {imgPreview}
+      </div>
+    )
+  }
+});
+
+var Embed = React.createClass({
+  displayName: 'Embed',
+  render: function () {
+    var fileDropState = this.props.fileDropState;
+    return (
+      <div className='embed section' style={{display: fileDropState === "registered" ? '' : 'none'}}>
+        <h3 className='title'>Embed File</h3>
+        <div className='embed-component'>
+          embed component will go here
+        </div>
+      </div>
+    )
+  }
+});
+
+var BitstoreMetaTable = React.createClass({
+  displayName: 'BitstoreMetaTable',
+  render: function () {
+    var fileDropState = this.props.fileDropState;
+    var bitstoreMeta = this.props.bitstoreMeta;
+    return (
+      <div className='info section' style={{display: bitstoreMeta && fileDropState === "uploaded" ? 'block' : 'none'}}>
+        <h3 className='title'>File Info</h3>
+        <ul className='info-table'>
+          <li>
+            <div className='info-table-title'>Type</div>
+            <div className='info-table-result'>{bitstoreMeta.mimetype}</div>
+          </li>
+          <li>
+            <div className='info-table-title'>Size</div>
+            <div className='info-table-result'>{bitstoreMeta.size}</div>
+          </li>
+          <li>
+            <div className='info-table-title'>Downloads</div>
+            <div className='info-table-result'>{bitstoreMeta.downloads}</div>
+          </li>
+          <li>
+            <div className='info-table-title'>Web URL</div>
+            <div className='info-table-result'> <a href={bitstoreMeta.uri} target='_blank'>{bitstoreMeta.uri}</a> </div>
+          </li>
+          <li>
+            <div className='info-table-title'>Torrent URL</div>
+            <div className='info-table-result'><a href={bitstoreMeta.torrent} target='_blank'>{bitstoreMeta.torrent}</a></div>
+          </li>
+        </ul>
+      </div>
     )
   }
 });
