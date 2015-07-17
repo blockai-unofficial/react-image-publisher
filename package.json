@@ -31,7 +31,6 @@
   "dependencies": {
     "bitstore": "0.0.5",
     "openpublish": "0.0.6",
-    "react-inline-css": "^1.1.1",
     "shasum": "^1.0.1"
   },
   "peerDependencies": {
