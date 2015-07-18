@@ -92,6 +92,9 @@ var ImagePublisher = React.createClass({
     var bitstoreMeta = this.state.bitstoreMeta;
     var fileDropState = this.state.fileDropState;
     var fileInfo = this.state.fileInfo;
+    var title = React.findDOMNode(this.refs.title).value;
+    var keywords = React.findDOMNode(this.refs.keywords).value;
+    console.log('title', title);
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
     if (!bitstoreMeta || !bitstoreMeta.uri || fileDropState != 'uploaded' || !fileInfo || !fileInfo.file || !fileSha1) {
@@ -286,7 +289,7 @@ var ImagePublisher = React.createClass({
               { className: 'label' },
               'Title'
             ),
-            React.createElement('input', { className: 'input', type: 'text', name: 'title' })
+            React.createElement('input', { className: 'input', type: 'text', ref: 'title', name: 'title' })
           ),
           React.createElement(
             'div',
@@ -296,7 +299,7 @@ var ImagePublisher = React.createClass({
               { className: 'label' },
               'Keywords'
             ),
-            React.createElement('input', { className: 'input', type: 'text', name: 'keywords' })
+            React.createElement('input', { className: 'input', type: 'text', ref: 'keywords', name: 'keywords' })
           )
         ),
         React.createElement(BitstoreMetaTable, { fileDropState: fileDropState, bitstoreMeta: bitstoreMeta }),
