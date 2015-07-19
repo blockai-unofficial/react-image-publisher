@@ -59,13 +59,12 @@ test('react-image-publisher', function (t) {
 
   t.test('should handle file drop', function(t) {
 
-    t.plan(9); // from outer space
+    t.plan(7); // from outer space
 
     createDropTestImageEvent(function(fakeEvt, file) {
 
       var onFileDrop = function(err, fileInfo) {
         var fileDropState = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'file-drop-state');
-        t.equal(fileDropState.getDOMNode().innerHTML, "File is scanned", "onFileDrop: fileDropState element should show 'File is scanned' after having processed the file");
         t.equal(renderedComponent.state.fileDropState, "scanned", "onFileDrop: component.state.fileDropState should be 'scanned'");
         t.equal(fileInfo.file.name, file.name, "onFileDrop: has file.name");
         t.equal(fileInfo.file.type, file.type, "onFileDrop: has file.type");
@@ -88,7 +87,6 @@ test('react-image-publisher', function (t) {
       TestUtils.Simulate.drop(fileDropArea.getDOMNode(), fakeEvt);
 
       var fileDropState = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'file-drop-state');
-      t.equal(fileDropState.getDOMNode().innerHTML, "File is scanning", "fileDropState element should show 'File is scanning' immediately after dropping the file");
       t.equal(renderedComponent.state.fileDropState, "scanning", "component.state.fileDropState should be 'scanning'");
 
     });  
@@ -97,7 +95,7 @@ test('react-image-publisher', function (t) {
 
   t.test('should upload to bitstore and register with openpublish', function (t) {
 
-    t.plan(16);
+    t.plan(15);
 
     var size = 256;
 
@@ -142,7 +140,6 @@ test('react-image-publisher', function (t) {
 
       var onStartUploadToBitstore = function(err, receipt) { 
         var fileDropState = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'file-drop-state');
-        t.equal(fileDropState.getDOMNode().innerHTML, "File is uploading", "onStartUploadToBitstore: fileDropState element should show 'File is uploading' after having clicked upload");
         t.equal(renderedComponent.state.fileDropState, "uploading", "onStartUploadToBitstore: component.state.fileDropState should be 'uploading'");
         t.ok(receipt, "onStartUploadToBitstore: has receipt");
         t.ok(receipt.fileInfo.fileData, "onStartUploadToBitstore: has fileInfo.fileData");

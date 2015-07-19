@@ -5,16 +5,13 @@ var openpublish = require('openpublish');
 var bitstore = require('bitstore');
 var shasum = require('shasum');
 
-var BitstoreMetaTable = require('./bitstore-meta-table');
-var GuideText = require('./guide-text');
-var Preview = require('./preview');
-var Embed = require('./embed');
-
 var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
   propTypes: {
     commonBlockchain: React.PropTypes.object.isRequired,
     commonWallet: React.PropTypes.object.isRequired,
+    onStartTopUpBalance: React.PropTypes.func,
+    onEndTopUpBalance: React.PropTypes.func,
     onStartUploadToBitstore: React.PropTypes.func,
     onEndUploadToBitstore: React.PropTypes.func,
     onStartRegisterWithOpenPublish: React.PropTypes.func,
@@ -33,11 +30,37 @@ var ImagePublisher = React.createClass({
       propagationStatus: ''
     };
   },
+  componentWillMount: function componentWillMount() {
+    var commonWallet = this.props.commonWallet;
+    var bitstoreClient = this.props.bitstoreClient || bitstore(commonWallet);
+    this.setState({
+      bitstoreClient: bitstoreClient
+    });
+  },
+  componentDidMount: function componentDidMount() {
+    this.updateBitstoreBalance();
+  },
+  updateBitstoreBalance: function updateBitstoreBalance(callback) {
+    var component = this;
+    var bitstoreClient = this.state.bitstoreClient;
+    bitstoreClient.wallet.get(function (err, res) {
+      var bitstoreBalance = res.body.balance;
+      var bitstoreDepositAddress = res.body.deposit_address;
+      component.setState({
+        bitstoreDepositAddress: bitstoreDepositAddress,
+        bitstoreBalance: bitstoreBalance
+      });
+      console.log('bitstore wallet info', res.body);
+      if (callback) {
+        callback(false, bitstoreBalance);
+      }
+    });
+  },
   topUpBalance: function topUpBalance() {
     var component = this;
     var commonWallet = this.props.commonWallet;
     var value; // wire up to UI
-    var destinationAddress; // wire up to UI
+    var destinationAddress = this.state.bitstoreDepositAddress;
     commonWallet.createTransactionForValueToDestinationAddress({
       destinationAddress: destinationAddress,
       value: value
@@ -51,13 +74,7 @@ var ImagePublisher = React.createClass({
         });
         var checkBitstoreBalance = function checkBitstoreBalance(options) {
           var retryAttempts = options.retryAttempts;
-          bitstoreClient.wallet.get(function (err, res) {
-            var bitstoreBalance = res.body.balance;
-            var bitstoreDepositAddress = res.body.deposit_address;
-            component.setState({
-              bitstoreDepositAddress: bitstoreDepositAddress,
-              bitstoreBalance: bitstoreBalance
-            });
+          component.updateBitstoreBalance(function (err, bitstoreBalance) {
             if (bitstoreBalance <= 0) {
               component.setState({
                 bitstoreState: 'still waiting for confirmation'
@@ -128,7 +145,7 @@ var ImagePublisher = React.createClass({
     var onStartUploadToBitstore = this.props.onStartUploadToBitstore;
     var onEndUploadToBitstore = this.props.onEndUploadToBitstore;
     var commonWallet = this.props.commonWallet;
-    var bitstoreClient = this.props.bitstoreClient || bitstore(commonWallet);
+    var bitstoreClient = this.state.bitstoreClient;
     var fileInfo = this.state.fileInfo;
     var fileDropState = this.state.fileDropState;
     var fileSha1 = this.state.fileSha1;
@@ -246,65 +263,92 @@ var ImagePublisher = React.createClass({
     var fileDropState = this.state.fileDropState;
     var imgPreview = this.state.imgPreviewDataURL ? React.createElement('img', { className: 'image-preview', src: this.state.imgPreviewDataURL }) : false;
     var bitstoreMeta = this.state.bitstoreMeta;
+    var bitstoreState = this.state.bitstoreState;
+    var commonWallet = this.props.commonWallet;
     return React.createElement(
       'div',
       { className: 'react-image-publisher' },
       React.createElement(
         'div',
-        {
-          className: 'file-drop-area',
-          onDragOver: this.dragOver,
-          onDragEnd: this.dragEnd,
-          onDrop: this.drop,
-          style: { borderColor: fileDropState === 'scanned' || fileDropState === 'uploaded' || fileDropState === 'registered' ? '#1ABC9C' : '' }
-        },
-        React.createElement(
-          'div',
-          { className: 'file-drop-state' },
-          fileDropState ? 'File is ' + fileDropState : 'Drop file here to begin'
-        )
-      ),
-      React.createElement(
-        'div',
         { className: 'container' },
-        React.createElement(GuideText, { fileDropState: fileDropState }),
-        React.createElement(
-          'button',
-          { className: 'upload-to-bitstore button', onClick: this.uploadToBitstore, style: { display: fileDropState != 'scanned' ? 'none' : '' } },
-          'Upload To Bitstore'
-        ),
-        React.createElement(
-          'button',
-          { className: 'register-with-openpublish button', onClick: this.registerWithOpenPublish, style: { display: fileDropState != 'uploaded' ? 'none' : '' } },
-          'Register With OpenPublish'
-        ),
         React.createElement(
           'div',
-          { className: 'inputs section', style: { display: fileDropState != 'uploaded' ? 'none' : '' } },
+          { className: 'certificate' },
           React.createElement(
             'div',
-            { className: 'input-group' },
+            { className: 'file-drop-area ' + (fileDropState ? 'file-exists' : ''), onDragOver: this.dragOver, onDragEnd: this.dragEnd, onDrop: this.drop },
             React.createElement(
-              'label',
-              { className: 'label' },
-              'Title'
+              'div',
+              { className: 'file-drop-state' },
+              fileDropState ? '' : 'Drop file here to begin'
             ),
-            React.createElement('input', { className: 'input', type: 'text', ref: 'title', name: 'title' })
+            imgPreview
           ),
           React.createElement(
             'div',
-            { className: 'input-group' },
+            { className: 'openpublish-container' },
             React.createElement(
-              'label',
-              { className: 'label' },
-              'Keywords'
+              'p',
+              { className: 'proclaimation' },
+              'This is to Certify that ',
+              React.createElement(
+                'span',
+                { className: 'address' },
+                commonWallet.address
+              ),
+              ' is the owner of.'
             ),
-            React.createElement('input', { className: 'input', type: 'text', ref: 'keywords', name: 'keywords' })
+            React.createElement(
+              'div',
+              { className: 'openpublish-data' },
+              React.createElement(
+                'div',
+                { className: 'bitstore-uri' },
+                React.createElement(
+                  'label',
+                  { 'for': 'uri' },
+                  'File URI'
+                ),
+                React.createElement(
+                  'span',
+                  null,
+                  bitstoreMeta.uri
+                ),
+                React.createElement('input', { className: 'input', type: 'text', ref: 'bitstore-deposit-value', name: 'bitstore-deposit-value', style: { display: bitstoreState != 'no balance' ? 'none' : '' } }),
+                React.createElement(
+                  'button',
+                  { className: 'upload-to-bitstore button', onClick: this.uploadToBitstore, style: { display: fileDropState != 'scanned' ? 'none' : '' } },
+                  'Upload To Bitstore'
+                )
+              ),
+              React.createElement(
+                'div',
+                { className: 'file-title' },
+                React.createElement(
+                  'label',
+                  { 'for': 'title' },
+                  'Title'
+                ),
+                React.createElement('input', { className: 'input', type: 'text', ref: 'title', name: 'title' })
+              ),
+              React.createElement(
+                'div',
+                { className: 'file-keywords' },
+                React.createElement(
+                  'label',
+                  { 'for': 'keywords' },
+                  'Keywords'
+                ),
+                React.createElement('input', { className: 'input', type: 'text', ref: 'keywords', name: 'keywords' })
+              ),
+              React.createElement(
+                'button',
+                { className: 'register-with-openpublish button', onClick: this.registerWithOpenPublish },
+                'Register With OpenPublish'
+              )
+            )
           )
-        ),
-        React.createElement(BitstoreMetaTable, { fileDropState: fileDropState, bitstoreMeta: bitstoreMeta }),
-        React.createElement(Preview, { fileDropState: fileDropState, filePreview: imgPreview }),
-        React.createElement(Embed, { fileDropState: fileDropState })
+        )
       )
     );
   }

@@ -3,16 +3,13 @@ var openpublish = require('openpublish');
 var bitstore = require('bitstore');
 var shasum = require('shasum');
 
-var BitstoreMetaTable = require('./bitstore-meta-table');
-var GuideText = require('./guide-text');
-var Preview = require('./preview');
-var Embed = require('./embed');
-
 var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
   propTypes: {
     commonBlockchain: React.PropTypes.object.isRequired,
     commonWallet: React.PropTypes.object.isRequired,
+    onStartTopUpBalance: React.PropTypes.func,
+    onEndTopUpBalance: React.PropTypes.func,
     onStartUploadToBitstore: React.PropTypes.func,
     onEndUploadToBitstore: React.PropTypes.func,
     onStartRegisterWithOpenPublish: React.PropTypes.func,
@@ -31,11 +28,37 @@ var ImagePublisher = React.createClass({
       propagationStatus: ""
     }
   },
+  componentWillMount: function() {
+    var commonWallet = this.props.commonWallet;
+    var bitstoreClient = this.props.bitstoreClient || bitstore(commonWallet);
+    this.setState({
+      bitstoreClient: bitstoreClient
+    });
+  },
+  componentDidMount: function() {
+    //this.updateBitstoreBalance();
+  },
+  updateBitstoreBalance: function(callback) {
+    var component = this;
+    var bitstoreClient = this.state.bitstoreClient;
+    bitstoreClient.wallet.get(function (err, res) {
+      var bitstoreBalance = res.body.balance;
+      var bitstoreDepositAddress = res.body.deposit_address;
+      component.setState({
+        bitstoreDepositAddress: bitstoreDepositAddress,
+        bitstoreBalance: bitstoreBalance,
+      });
+      console.log("bitstore wallet info", res.body);
+      if (callback) {
+        callback(false, bitstoreBalance);
+      }
+    });
+  },
   topUpBalance: function() {
     var component = this;
     var commonWallet = this.props.commonWallet;
     var value; // wire up to UI
-    var destinationAddress; // wire up to UI
+    var destinationAddress = this.state.bitstoreDepositAddress;
     commonWallet.createTransactionForValueToDestinationAddress({
       destinationAddress: destinationAddress,
       value: value,
@@ -49,13 +72,7 @@ var ImagePublisher = React.createClass({
         });
         var checkBitstoreBalance = function(options) {
           var retryAttempts = options.retryAttempts;
-          bitstoreClient.wallet.get(function (err, res) {
-            var bitstoreBalance = res.body.balance;
-            var bitstoreDepositAddress = res.body.deposit_address;
-            component.setState({
-              bitstoreDepositAddress: bitstoreDepositAddress,
-              bitstoreBalance: bitstoreBalance,
-            });
+          component.updateBitstoreBalance(function(err, bitstoreBalance) {
             if (bitstoreBalance <= 0) {
               component.setState({
                 bitstoreState: "still waiting for confirmation"
@@ -127,7 +144,7 @@ var ImagePublisher = React.createClass({
     var onStartUploadToBitstore = this.props.onStartUploadToBitstore;
     var onEndUploadToBitstore = this.props.onEndUploadToBitstore;
     var commonWallet = this.props.commonWallet;
-    var bitstoreClient = this.props.bitstoreClient || bitstore(commonWallet);
+    var bitstoreClient = this.state.bitstoreClient;
     var fileInfo = this.state.fileInfo;
     var fileDropState = this.state.fileDropState;
     var fileSha1 = this.state.fileSha1;
@@ -149,7 +166,7 @@ var ImagePublisher = React.createClass({
         var bitstoreDepositAddress = res.body.deposit_address;
         component.setState({
           bitstoreDepositAddress: bitstoreDepositAddress,
-          bitstoreBalance: bitstoreBalance,
+          bitstoreBalance: bitstoreBalance
         });
         if (bitstoreBalance <= 0) {
           component.setState({
@@ -246,55 +263,102 @@ var ImagePublisher = React.createClass({
     var fileDropState = this.state.fileDropState;
     var imgPreview = this.state.imgPreviewDataURL ? <img className="image-preview" src={this.state.imgPreviewDataURL} /> : false;
     var bitstoreMeta = this.state.bitstoreMeta;
+    var bitstoreState = this.state.bitstoreState;
+    var commonWallet = this.props.commonWallet;
+    var displayUri = bitstoreMeta.uri ? bitstoreMeta.uri.split("//")[1].split("/")[0] : "";
+    var fileName = this.state.fileInfo ? this.state.fileInfo.file.name : "";
+    var fileType = this.state.fileInfo ? this.state.fileInfo.file.type : "";
+    var fileSize = this.state.fileInfo ? this.state.fileInfo.file.size : "";
     return (
       <div className='react-image-publisher'>
 
-        <div
-          className='file-drop-area'
-          onDragOver={this.dragOver}
-          onDragEnd={this.dragEnd}
-          onDrop={this.drop}
-          style={{ borderColor: fileDropState === "scanned" || fileDropState === "uploaded" || fileDropState === "registered" ? '#1ABC9C' : ''}}
-        >
-          <div className='file-drop-state'>
-            {fileDropState ? "File is " + fileDropState : 'Drop file here to begin'}
-          </div>
-        </div>
-
         <div className='container'>
 
-          <GuideText fileDropState={fileDropState} />
+          <div className="certificate">
 
-          <button className='upload-to-bitstore button' onClick={this.uploadToBitstore} style={{display: fileDropState != "scanned" ? 'none' : ''}}>
-            Upload To Bitstore
-          </button>
-
-          <button className='register-with-openpublish button' onClick={this.registerWithOpenPublish} style={{display: fileDropState != "uploaded" ? 'none' : ''}}>
-            Register With OpenPublish
-          </button>
-
-          <div className='inputs section' style={{display: fileDropState != "uploaded" ? 'none' : ''}}>
-
-            <div className='input-group'>
-              <label className='label'>Title</label>
-              <input className='input' type='text' ref='title' name='title' />
+            <div className={'file-drop-area ' + (fileDropState ? 'file-exists' : '')} onDragOver={this.dragOver} onDragEnd={this.dragEnd} onDrop={this.drop} >
+              <div className='file-drop-state'>
+                {fileDropState ? "" : 'Drop file here to begin'}
+              </div>
+              { imgPreview }
             </div>
 
-            <div className='input-group'>
-              <label className='label'>Keywords</label>
-              <input className='input' type='text' ref='keywords' name='keywords' />
-            </div>
+            <div className="openpublish-container">
 
+              <p className="proclaimation">This Certifies that <span className="address">{commonWallet.address}</span> is the</p>
+
+              <p className="share-definition">registered holder of <span className="share-count">100,000,000</span> shares</p>
+
+              <p className="media-definition">that represent a limited and nonexclusive ownership of copyright for work identified by the SHA-1 value of <span className="sha-1">{this.state.fileSha1}</span></p>
+
+              <div className="data-definition">
+
+                <div className="file-data">
+
+                  <div className="data-item file-name">
+                    <label for="name">Name</label> <span className="name">{fileName}</span>
+                  </div>
+                  <div className="data-item file-type">
+                    <label for="type">Type</label> <span className="type">{fileType}</span>
+                  </div>
+                  <div className="data-item file-size">
+                    <label for="size">Size</label> <span className="size">{fileSize}</span>
+                  </div>
+
+                </div>
+
+                <div className='openpublish-data'>
+
+                  <div className='data-item bitstore-uri'>
+
+                    <label for="uri">URI</label>
+
+                    <span className="uri">{ fileDropState == "uploading" ? "uploading to bitstore" : displayUri}</span>
+
+                    <input className='input' type='text' ref='bitstore-deposit-value' name='bitstore-deposit-value' style={{display: bitstoreState != "no balance" ? 'none' : ''}} />
+
+                    <span className="upload-container" style={{display: fileDropState != "scanned" ? 'none' : ''}}>
+
+                      <button className='upload-to-bitstore button' onClick={this.uploadToBitstore}>
+                        Upload To Bitstore
+                      </button>
+
+                      <span className="price">
+                        100 bits ($0.02)
+                      </span>
+
+                    </span>
+
+                  </div>
+
+                  <div className="data-item file-title">
+                    <label for="title">Title</label><input className='input' type='text' ref='title' name='title' />
+                  </div>
+
+                  <div className="data-item file-keywords">
+                    <label for="keywords">Keywords</label><input className='input' type='text' ref='keywords' name='keywords' />
+                  </div>
+
+                </div>
+
+              </div>
+
+              <p className="transfer-definition">transferable only with the Open Publish protocol on the Bitcoin blockchain by the holder of the corresponding private keys.</p>
+
+              <p className="witness-definition"><span className="in-witness-whereof">In Witness Whereof,</span> this document is embedded in the Bitcoin blockchain and secured by a minimum of three confirmations.</p>
+
+              <button disabled={fileDropState != "uploaded"} className='register-with-openpublish button' onClick={this.registerWithOpenPublish}>
+                Sign and Propagate
+              </button>
+
+            </div>
+            
           </div>
 
-          <BitstoreMetaTable fileDropState={fileDropState} bitstoreMeta={bitstoreMeta} />
 
-          <Preview fileDropState={fileDropState} filePreview={imgPreview} />
-
-          <Embed fileDropState={fileDropState} />
-
-
+          
         </div>
+
       </div>
     )
   }
