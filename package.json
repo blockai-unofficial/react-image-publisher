@@ -55,6 +55,7 @@
     "request": "^2.58.0",
     "tap-spec": "^4.0.2",
     "tapes": "^2.0.0",
+    "test-common-wallet": "^1.0.2",
     "watchify": "^3.3.0"
   }
 }

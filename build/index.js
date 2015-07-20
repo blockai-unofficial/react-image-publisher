@@ -37,9 +37,7 @@ var ImagePublisher = React.createClass({
       bitstoreClient: bitstoreClient
     });
   },
-  componentDidMount: function componentDidMount() {
-    this.updateBitstoreBalance();
-  },
+  componentDidMount: function componentDidMount() {},
   updateBitstoreBalance: function updateBitstoreBalance(callback) {
     var component = this;
     var bitstoreClient = this.state.bitstoreClient;
@@ -265,6 +263,10 @@ var ImagePublisher = React.createClass({
     var bitstoreMeta = this.state.bitstoreMeta;
     var bitstoreState = this.state.bitstoreState;
     var commonWallet = this.props.commonWallet;
+    var displayUri = bitstoreMeta.uri ? bitstoreMeta.uri.split('//')[1].split('/')[0] : '';
+    var fileName = this.state.fileInfo ? this.state.fileInfo.file.name : '';
+    var fileType = this.state.fileInfo ? this.state.fileInfo.file.type : '';
+    var fileSize = this.state.fileInfo ? this.state.fileInfo.file.size : '';
     return React.createElement(
       'div',
       { className: 'react-image-publisher' },
@@ -290,62 +292,160 @@ var ImagePublisher = React.createClass({
             React.createElement(
               'p',
               { className: 'proclaimation' },
-              'This is to Certify that ',
+              'This Certifies that ',
               React.createElement(
                 'span',
                 { className: 'address' },
                 commonWallet.address
               ),
-              ' is the owner of.'
+              ' is the'
+            ),
+            React.createElement(
+              'p',
+              { className: 'share-definition' },
+              'registered holder of ',
+              React.createElement(
+                'span',
+                { className: 'share-count' },
+                '100,000,000'
+              ),
+              ' shares'
+            ),
+            React.createElement(
+              'p',
+              { className: 'media-definition' },
+              'that represent a limited and nonexclusive ownership of copyright for work identified by the SHA-1 value of ',
+              React.createElement(
+                'span',
+                { className: 'sha-1' },
+                this.state.fileSha1
+              )
             ),
             React.createElement(
               'div',
-              { className: 'openpublish-data' },
+              { className: 'data-definition' },
               React.createElement(
                 'div',
-                { className: 'bitstore-uri' },
+                { className: 'file-data' },
                 React.createElement(
-                  'label',
-                  { 'for': 'uri' },
-                  'File URI'
+                  'div',
+                  { className: 'data-item file-name' },
+                  React.createElement(
+                    'label',
+                    { 'for': 'name' },
+                    'Name'
+                  ),
+                  ' ',
+                  React.createElement(
+                    'span',
+                    { className: 'name' },
+                    fileName
+                  )
                 ),
                 React.createElement(
-                  'span',
-                  null,
-                  bitstoreMeta.uri
+                  'div',
+                  { className: 'data-item file-type' },
+                  React.createElement(
+                    'label',
+                    { 'for': 'type' },
+                    'Type'
+                  ),
+                  ' ',
+                  React.createElement(
+                    'span',
+                    { className: 'type' },
+                    fileType
+                  )
                 ),
-                React.createElement('input', { className: 'input', type: 'text', ref: 'bitstore-deposit-value', name: 'bitstore-deposit-value', style: { display: bitstoreState != 'no balance' ? 'none' : '' } }),
                 React.createElement(
-                  'button',
-                  { className: 'upload-to-bitstore button', onClick: this.uploadToBitstore, style: { display: fileDropState != 'scanned' ? 'none' : '' } },
-                  'Upload To Bitstore'
+                  'div',
+                  { className: 'data-item file-size' },
+                  React.createElement(
+                    'label',
+                    { 'for': 'size' },
+                    'Size'
+                  ),
+                  ' ',
+                  React.createElement(
+                    'span',
+                    { className: 'size' },
+                    fileSize
+                  )
                 )
               ),
               React.createElement(
                 'div',
-                { className: 'file-title' },
+                { className: 'openpublish-data' },
                 React.createElement(
-                  'label',
-                  { 'for': 'title' },
-                  'Title'
+                  'div',
+                  { className: 'data-item bitstore-uri' },
+                  React.createElement(
+                    'label',
+                    { 'for': 'uri' },
+                    'URI'
+                  ),
+                  React.createElement(
+                    'span',
+                    { className: 'uri' },
+                    fileDropState == 'uploading' ? 'uploading to bitstore' : displayUri
+                  ),
+                  React.createElement('input', { className: 'input', type: 'text', ref: 'bitstore-deposit-value', name: 'bitstore-deposit-value', style: { display: bitstoreState != 'no balance' ? 'none' : '' } }),
+                  React.createElement(
+                    'span',
+                    { className: 'upload-container', style: { display: fileDropState != 'scanned' ? 'none' : '' } },
+                    React.createElement(
+                      'button',
+                      { className: 'upload-to-bitstore button', onClick: this.uploadToBitstore },
+                      'Upload To Bitstore'
+                    ),
+                    React.createElement(
+                      'span',
+                      { className: 'price' },
+                      '100 bits ($0.02)'
+                    )
+                  )
                 ),
-                React.createElement('input', { className: 'input', type: 'text', ref: 'title', name: 'title' })
-              ),
-              React.createElement(
-                'div',
-                { className: 'file-keywords' },
                 React.createElement(
-                  'label',
-                  { 'for': 'keywords' },
-                  'Keywords'
+                  'div',
+                  { className: 'data-item file-title' },
+                  React.createElement(
+                    'label',
+                    { 'for': 'title' },
+                    'Title'
+                  ),
+                  React.createElement('input', { className: 'input', type: 'text', ref: 'title', name: 'title' })
                 ),
-                React.createElement('input', { className: 'input', type: 'text', ref: 'keywords', name: 'keywords' })
-              ),
-              React.createElement(
-                'button',
-                { className: 'register-with-openpublish button', onClick: this.registerWithOpenPublish },
-                'Register With OpenPublish'
+                React.createElement(
+                  'div',
+                  { className: 'data-item file-keywords' },
+                  React.createElement(
+                    'label',
+                    { 'for': 'keywords' },
+                    'Keywords'
+                  ),
+                  React.createElement('input', { className: 'input', type: 'text', ref: 'keywords', name: 'keywords' })
+                )
               )
+            ),
+            React.createElement(
+              'p',
+              { className: 'transfer-definition' },
+              'transferable only with the Open Publish protocol on the Bitcoin blockchain by the holder of the corresponding private keys.'
+            ),
+            React.createElement(
+              'p',
+              { className: 'witness-definition' },
+              React.createElement(
+                'span',
+                { className: 'in-witness-whereof' },
+                'In Witness Whereof,'
+              ),
+              ' this document is embedded in the Bitcoin blockchain and secured by a minimum of three confirmations.'
+            ),
+            React.createElement(
+              'button',
+              { disabled: fileDropState != 'uploaded', className: 'register-with-openpublish button', onClick: this.registerWithOpenPublish },
+              'Sign and Propagate'
             )
           )
         )
@@ -355,3 +455,5 @@ var ImagePublisher = React.createClass({
 });
 
 module.exports = ImagePublisher;
+
+//this.updateBitstoreBalance();
