@@ -61,7 +61,7 @@ var ImagePublisher = React.createClass({
     var destinationAddress = this.state.bitstoreDepositAddress;
     commonWallet.createTransaction({
       destinationAddress: destinationAddress,
-      value: value,
+      valueInBTC: value,
     }, function(err, signedTxHex) {
       commonBlockchain.Transactions.Propagate(signedTxHex, function(err, receipt) {
         if (err) {
