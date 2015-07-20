@@ -30,7 +30,7 @@ var simpleCommonWallet = function(options) {
     cb(false, signedTxHex, txid);
   };
 
-  var createTransactionForValueToDestinationAddress = function(options, callback) {
+  var createTransaction = function(options, callback) {
     var value = options.value;
     var destinationAddress = options.destinationAddress;
     commonBlockchain.Addresses.Unspents([destinationAddress], function(err, addressesUnspents) {
@@ -53,7 +53,7 @@ var simpleCommonWallet = function(options) {
     signRawTransaction: signRawTransaction,
     signMessage: signMessage,
     address: address,
-    createTransactionForValueToDestinationAddress: createTransactionForValueToDestinationAddress
+    createTransaction: createTransaction
   };
 
   return commonWallet;

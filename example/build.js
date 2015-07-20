@@ -39,7 +39,7 @@ var simpleCommonWallet = function simpleCommonWallet(options) {
     cb(false, signedTxHex, txid);
   };
 
-  var createTransactionForValueToDestinationAddress = function createTransactionForValueToDestinationAddress(options, callback) {
+  var createTransaction = function createTransaction(options, callback) {
     var value = options.value;
     var destinationAddress = options.destinationAddress;
     commonBlockchain.Addresses.Unspents([destinationAddress], function (err, addressesUnspents) {
@@ -61,7 +61,7 @@ var simpleCommonWallet = function simpleCommonWallet(options) {
     signRawTransaction: signRawTransaction,
     signMessage: signMessage,
     address: address,
-    createTransactionForValueToDestinationAddress: createTransactionForValueToDestinationAddress
+    createTransaction: createTransaction
   };
 
   return commonWallet;
@@ -92785,7 +92785,7 @@ var ImagePublisher = React.createClass({
     var commonWallet = this.props.commonWallet;
     var value; // wire up to UI
     var destinationAddress = this.state.bitstoreDepositAddress;
-    commonWallet.createTransactionForValueToDestinationAddress({
+    commonWallet.createTransaction({
       destinationAddress: destinationAddress,
       value: value
     }, function (err, signedTxHex) {
