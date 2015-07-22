@@ -7,7 +7,7 @@ var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
   propTypes: {
     commonBlockchain: React.PropTypes.object.isRequired,
-    commonWallet: React.PropTypes.object.isRequired,
+    commonWallet: React.PropTypes.object,
     onStartTopUpBalance: React.PropTypes.func,
     onEndTopUpBalance: React.PropTypes.func,
     onStartUploadToBitstore: React.PropTypes.func,
@@ -30,10 +30,12 @@ var ImagePublisher = React.createClass({
   },
   componentWillMount: function() {
     var commonWallet = this.props.commonWallet;
-    var bitstoreClient = this.props.bitstoreClient || bitstore(commonWallet);
-    this.setState({
-      bitstoreClient: bitstoreClient
-    });
+    if (commonWallet) {
+      var bitstoreClient = this.props.bitstoreClient || bitstore(commonWallet);
+      this.setState({
+        bitstoreClient: bitstoreClient
+      });
+    }
   },
   componentDidMount: function() {
     //this.updateBitstoreBalance();
@@ -108,9 +110,8 @@ var ImagePublisher = React.createClass({
     var bitstoreMeta = this.state.bitstoreMeta;
     var fileDropState = this.state.fileDropState;
     var fileInfo = this.state.fileInfo;
-    var title = React.findDOMNode(this.refs.title).value;
-    var keywords = React.findDOMNode(this.refs.keywords).value;
-    console.log("title", title);
+    var title = this.refs.title.getDOMNode().value;
+    var keywords = this.refs.keywords.getDOMNode().value;
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
     if (!bitstoreMeta || !bitstoreMeta.uri || fileDropState != "uploaded" || !fileInfo || !fileInfo.file || !fileSha1) {
@@ -144,6 +145,12 @@ var ImagePublisher = React.createClass({
     var onStartUploadToBitstore = this.props.onStartUploadToBitstore;
     var onEndUploadToBitstore = this.props.onEndUploadToBitstore;
     var commonWallet = this.props.commonWallet;
+    if (commonWallet) {
+      var bitstoreClient = this.state.bitstoreClient || this.props.bitstoreClient || bitstore(commonWallet);
+      this.setState({
+        bitstoreClient: bitstoreClient
+      });
+    }
     var bitstoreClient = this.state.bitstoreClient;
     var fileInfo = this.state.fileInfo;
     var fileDropState = this.state.fileDropState;
@@ -269,7 +276,7 @@ var ImagePublisher = React.createClass({
     var imgPreview = this.state.imgPreviewDataURL ? <img className="image-preview" src={this.state.imgPreviewDataURL} /> : false;
     var bitstoreMeta = this.state.bitstoreMeta;
     var bitstoreState = this.state.bitstoreState;
-    var commonWallet = this.props.commonWallet;
+    var commonWallet = this.props.commonWallet || { address: ""};
     var displayUri = bitstoreMeta.uri ? bitstoreMeta.uri.split("//")[1].split("/")[0] : "";
     var fileName = this.state.fileInfo ? this.state.fileInfo.file.name : "";
     var fileType = this.state.fileInfo ? this.state.fileInfo.file.type : "";

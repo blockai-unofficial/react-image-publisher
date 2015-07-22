@@ -61,14 +61,14 @@
 
 .openpublish-container p.proclaimation {
   font-weight: bold;
-  font-size: 140%;
+  font-size: 22px;
   display: flex;
   justify-content: space-between;
   font-family: germania-one;
 }
 
 .openpublish-container p.share-definition {
-  font-size: 100%;
+  font-size: 16px;
   line-height: 20px;
   margin-top: 10px;
   font-family: miama, sans-serif;
@@ -78,21 +78,21 @@
 
 .openpublish-container p.media-definition {
   margin: 0px 0 10px 0;
-  font-size: 100%;
+  font-size: 16px;
   line-height: 30px;
   font-family: miama, sans-serif;
 }
 
 .openpublish-container p.transfer-definition {
   margin: 0px 0 0px 0;
-  font-size: 60%;
+  font-size: 9px;
   line-height: 30px;
   font-family: miama, sans-serif;
 }
 
 .openpublish-container p.witness-definition {
   margin: 0px 0 10px 0;
-  font-size: 60%;
+  font-size: 9px;
   line-height: 10px;
   font-family: miama, sans-serif;
 }
@@ -101,10 +101,24 @@
   font-family: germania-one;
 }
 
-.openpublish-container .address, .openpublish-container .share-count, .openpublish-container .sha-1 {
+.openpublish-container .address {
   font-family: Courier New;
   font-weight: normal;
-  font-size: 70%;
+  font-size: 16px;
+  border-bottom: 1px dashed black;
+}
+
+.openpublish-container .share-count {
+  font-family: Courier New;
+  font-weight: normal;
+  font-size: 12px;
+  border-bottom: 1px dashed black;
+}
+
+.openpublish-container .sha-1 {
+  font-family: Courier New;
+  font-weight: normal;
+  font-size: 12px;
   border-bottom: 1px dashed black;
 }
 
@@ -138,7 +152,6 @@
 }
 
 .openpublish-data .uri {
-  font-size: 90%;
   white-space: nowrap;
 }
 
