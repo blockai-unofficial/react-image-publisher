@@ -2,8 +2,7 @@
 'use strict';
 
 var React = require('react');
-var bitcoin = require('bitcoinjs-lib');
-var randombytes = require('randombytes');
+
 var ImagePublisher = require('../src');
 var commonBlockchain = require('blockcypher-unofficial')({
   network: 'testnet',
@@ -20,7 +19,7 @@ var commonWallet = testCommonWallet({
 
 React.render(React.createElement(ImagePublisher, { commonBlockchain: commonBlockchain, commonWallet: commonWallet }), document.getElementById('example'));
 
-},{"../src":598,"bitcoinjs-lib":40,"blockcypher-unofficial":56,"randombytes":220,"react":375,"test-common-wallet":389}],2:[function(require,module,exports){
+},{"../src":598,"blockcypher-unofficial":56,"react":375,"test-common-wallet":389}],2:[function(require,module,exports){
 // (public) Constructor
 function BigInteger(a, b, c) {
   if (!(this instanceof BigInteger))
@@ -66924,11 +66923,13 @@ function generateRandomWIF(network) {
   return key.toWIF(network).toString();
 }
 
+// a hacky way to generate the private key used by a now deprecated wallet object from bitcoinjs-lib
 function WIFKeyFromSeed(seed, network) {
   network = networkCheck(network);
   var hash = bitcoin.crypto.sha256(seed);
-  var d = bigi.fromBuffer(hash);
-  var key = new bitcoin.ECKey(d);
+  var hdnode = bitcoin.HDNode.fromSeedBuffer(hash, network);
+  var temp = hdnode.deriveHardened(0).derive(0);
+  var key = new bitcoin.ECKey(temp.derive(0).privKey.d);
   var wif = key.toWIF(network);
   return wif;
 }
@@ -93004,6 +93005,7 @@ var ImagePublisher = React.createClass({
       return;
     }
     bitstoreClient.files.meta(fileSha1, function (err, res) {
+      console.log('bitstoreClient.files.meta', fileSha1, res);
       var bitstoreMeta = res.body;
       if (bitstoreMeta.size) {
         // needs a more robust check
@@ -93015,12 +93017,14 @@ var ImagePublisher = React.createClass({
         return;
       }
       bitstoreClient.wallet.get(function (err, res) {
+        console.log('bitstoreClient.wallet.get', commonWallet.address, res);
         var bitstoreBalance = res.body.balance;
         var bitstoreDepositAddress = res.body.deposit_address;
         component.setState({
           bitstoreDepositAddress: bitstoreDepositAddress,
           bitstoreBalance: bitstoreBalance
         });
+        console.log('bitstoreBalance', bitstoreBalance);
         if (bitstoreBalance <= 0) {
           component.setState({
             bitstoreState: 'no balance'
@@ -93038,7 +93042,9 @@ var ImagePublisher = React.createClass({
             fileInfo: fileInfo
           });
         }
+        console.log('about to upload...');
         bitstoreClient.files.put(fileInfo.file, function (error, res) {
+          console.log('bitstoreClient.files.put', fileInfo.file, res);
           var bitstoreMeta = res.body;
           component.setState({
             bitstoreStatus: 'new',
@@ -93240,7 +93246,11 @@ var ImagePublisher = React.createClass({
                   React.createElement(
                     'span',
                     { className: 'uri' },
-                    fileDropState == 'uploading' ? 'uploading to bitstore' : displayUri
+                    fileDropState == 'uploading' ? 'uploading to bitstore' : React.createElement(
+                      'a',
+                      { href: bitstoreMeta.uri },
+                      displayUri
+                    )
                   ),
                   React.createElement('input', { className: 'input', type: 'text', ref: 'bitstore-deposit-value', name: 'bitstore-deposit-value', style: { display: bitstoreState != 'no balance' ? 'none' : '' } }),
                   React.createElement(

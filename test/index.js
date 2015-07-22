@@ -5,7 +5,8 @@ var FileReader = require("filereader");
 var request = require('request');
 var blockcast = require('blockcast');
 
-var simpleCommonWallet = require('./simple-common-wallet');
+var testCommonWallet = require('test-common-wallet');
+
 var createRandomDropFileEvent = require('./create-random-drop-file-event');
 var createDropTestImageEvent = require('./create-drop-test-image-event');
 
@@ -42,11 +43,11 @@ var commonBlockchain = require('blockcypher-unofficial')({
   network: "testnet"
 });
 
-var commonWallet = simpleCommonWallet({
+var commonWallet = testCommonWallet({
   seed: "test",
+  network: "testnet",
   commonBlockchain: commonBlockchain
 });
-
 test('react-image-publisher', function (t) {
 
   t.test('should create the component', function (t) {

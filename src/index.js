@@ -152,6 +152,7 @@ var ImagePublisher = React.createClass({
       return;
     }
     bitstoreClient.files.meta(fileSha1, function(err, res) {
+      console.log("bitstoreClient.files.meta", fileSha1, res);
       var bitstoreMeta = res.body;
       if (bitstoreMeta.size) { // needs a more robust check
         component.setState({
@@ -162,12 +163,14 @@ var ImagePublisher = React.createClass({
         return;
       }
       bitstoreClient.wallet.get(function (err, res) {
+        console.log("bitstoreClient.wallet.get", commonWallet.address, res);
         var bitstoreBalance = res.body.balance;
         var bitstoreDepositAddress = res.body.deposit_address;
         component.setState({
           bitstoreDepositAddress: bitstoreDepositAddress,
           bitstoreBalance: bitstoreBalance
         });
+        console.log("bitstoreBalance", bitstoreBalance);
         if (bitstoreBalance <= 0) {
           component.setState({
             bitstoreState: "no balance"
@@ -185,7 +188,9 @@ var ImagePublisher = React.createClass({
             fileInfo: fileInfo
           });
         }
+        console.log("about to upload...");
         bitstoreClient.files.put(fileInfo.file, function(error, res) {
+          console.log("bitstoreClient.files.put", fileInfo.file, res);
           var bitstoreMeta = res.body;
           component.setState({
             bitstoreStatus: "new",
@@ -313,7 +318,7 @@ var ImagePublisher = React.createClass({
 
                     <label for="uri">URI</label>
 
-                    <span className="uri">{ fileDropState == "uploading" ? "uploading to bitstore" : displayUri}</span>
+                    <span className="uri">{ fileDropState == "uploading" ? "uploading to bitstore" : <a href={bitstoreMeta.uri}>{displayUri}</a> }</span>
 
                     <input className='input' type='text' ref='bitstore-deposit-value' name='bitstore-deposit-value' style={{display: bitstoreState != "no balance" ? 'none' : ''}} />
 
