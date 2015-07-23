@@ -5,6 +5,8 @@ var openpublish = require('openpublish');
 var bitstore = require('bitstore');
 var shasum = require('shasum');
 
+var OpenpublishState = require('./openpublish-state')();
+
 var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
   propTypes: {
@@ -27,7 +29,8 @@ var ImagePublisher = React.createClass({
       fileDropState: false,
       fileSha1: false,
       payloadsLength: 0,
-      propagationStatus: ''
+      propagationStatus: '',
+      openPublishReceipt: false
     };
   },
   componentWillMount: function componentWillMount() {
@@ -109,8 +112,8 @@ var ImagePublisher = React.createClass({
     var bitstoreMeta = this.state.bitstoreMeta;
     var fileDropState = this.state.fileDropState;
     var fileInfo = this.state.fileInfo;
-    var title = this.refs.title.getDOMNode().value;
-    var keywords = this.refs.keywords.getDOMNode().value;
+    // var title = this.refs.title.getDOMNode().value;
+    // var keywords = this.refs.keywords.getDOMNode().value;
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
     if (!bitstoreMeta || !bitstoreMeta.uri || fileDropState != 'uploaded' || !fileInfo || !fileInfo.file || !fileSha1) {
@@ -132,7 +135,8 @@ var ImagePublisher = React.createClass({
       commonBlockchain: commonBlockchain
     }, function (err, openPublishReceipt) {
       component.setState({
-        fileDropState: 'registered'
+        fileDropState: 'registered',
+        openPublishReceipt: openPublishReceipt
       });
       if (onEndRegisterWithOpenPublish) {
         onEndRegisterWithOpenPublish(false, openPublishReceipt);
@@ -226,14 +230,23 @@ var ImagePublisher = React.createClass({
     var component = this;
     var file = event.dataTransfer.files[0];
     component.setState({
-      fileDropState: 'scanning'
+      fileDropState: 'scanning',
+      fileInfo: false,
+      bitstoreMeta: false,
+      fileSha1: false
     });
-
     var bufferReader = new FileReader();
     bufferReader.addEventListener('load', function (e) {
       var arr = new Uint8Array(e.target.result);
       var buffer = new Buffer(arr);
       var sha1 = shasum(buffer);
+
+      OpenpublishState.findRegistration({
+        sha1: sha1
+      }, function (err, registrationInfo) {
+        console.log('registrationInfo', registrationInfo);
+      });
+
       component.setState({
         fileSha1: sha1
       });
@@ -279,6 +292,25 @@ var ImagePublisher = React.createClass({
     var fileName = this.state.fileInfo ? this.state.fileInfo.file.name : '';
     var fileType = this.state.fileInfo ? this.state.fileInfo.file.type : '';
     var fileSize = this.state.fileInfo ? this.state.fileInfo.file.size : '';
+    var openPublishReceipt = this.state.openPublishReceipt;
+    var openPublishReceiptView = null;
+    if (openPublishReceipt) {
+      openPublishReceiptView = React.createElement(
+        'div',
+        { className: 'open-publish-receipt' },
+        React.createElement(
+          'p',
+          null,
+          'The transaction that represents your Open Publish registration is propagating and waiting for confirmation: ',
+          React.createElement(
+            'a',
+            { href: 'https://www.blocktrail.com/tBTC/tx/' + openPublishReceipt.blockcastTx.txid },
+            openPublishReceipt.blockcastTx.txid
+          )
+        )
+      );
+    }
+
     return React.createElement(
       'div',
       { className: 'react-image-publisher' },
@@ -463,7 +495,8 @@ var ImagePublisher = React.createClass({
               { disabled: fileDropState != 'uploaded', className: 'register-with-openpublish button', onClick: this.registerWithOpenPublish },
               'Sign and Propagate'
             )
-          )
+          ),
+          openPublishReceiptView
         )
       )
     );

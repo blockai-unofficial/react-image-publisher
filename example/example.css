@@ -189,3 +189,8 @@ button.register-with-openpublish:disabled {
   background-color: #eee;
   border: 1px solid #ccc;
 }
+
+.open-publish-receipt {
+  font-family: sans-serif;
+  font-size: 12px;
+}

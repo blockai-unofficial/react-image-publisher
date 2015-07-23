@@ -1,6 +1,6 @@
 {
   "name": "react-image-publisher",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A common blockchain React component for publishing images with Bitstore and Open Publish",
   "main": "build/index.js",
   "scripts": {
@@ -30,9 +30,14 @@
     "url": "https://github.com/blockai/react-image-publisher/issues"
   },
   "homepage": "https://github.com/blockai/react-image-publisher#readme",
+  "browser": {
+    "request": "browser-request"
+  },
   "dependencies": {
     "bitstore": "0.0.5",
+    "browser-request": "^0.3.3",
     "openpublish": "0.0.6",
+    "request": "^2.60.0",
     "shasum": "^1.0.1"
   },
   "peerDependencies": {
