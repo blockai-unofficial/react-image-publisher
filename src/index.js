@@ -3,8 +3,6 @@ var openpublish = require('openpublish');
 var bitstore = require('bitstore');
 var shasum = require('shasum');
 
-var OpenpublishState = require("./openpublish-state")();
-
 var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
   propTypes: {
@@ -241,13 +239,6 @@ var ImagePublisher = React.createClass({
       var arr = new Uint8Array(e.target.result);
       var buffer = new Buffer(arr);
       var sha1 = shasum(buffer);
-
-      OpenpublishState.findRegistration({
-        sha1: sha1
-      }, function(err, registrationInfo) {
-        console.log("registrationInfo", registrationInfo);
-      });
-
       component.setState({
         fileSha1: sha1
       });
