@@ -103,20 +103,23 @@ test('react-image-publisher', function (t) {
     createRandomDropFileEvent(size, function(fakeEvt, randomFile) {
 
       var onFileDrop = function(err, fileInfo) {
-        var uploadToBitstore = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'upload-to-bitstore');
-        var uploadToBitstoreButton = uploadToBitstore.getDOMNode();
-        TestUtils.Simulate.click(uploadToBitstoreButton);
+        var verifyPayment = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'verify-bitstore-payment');
+        TestUtils.Simulate.change(verifyPayment.getDOMNode(), {"target": {"checked": true}});
+        renderedComponent.forceUpdate(function() {
+          var uploadToBitstore = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'upload-to-bitstore');
+          TestUtils.Simulate.click(uploadToBitstore.getDOMNode());
+        });
       };
 
       var onStartRegisterWithOpenPublish = function(err, fileInfo) {
         renderedComponent.forceUpdate(function() {
-          t.equal(renderedComponent.state.fileDropState, "propagating", "onStartRegisterWithOpenPublish: component.state.fileDropState should be 'propagating'");
+          t.equal(renderedComponent.state.fileDropState, "registering", "onStartRegisterWithOpenPublish: component.state.fileDropState should be 'registering'");
         });
       };
 
       var onEndRegisterWithOpenPublish = function(err, openPublishReceipt) {
         t.ok(openPublishReceipt.data.op == "r", "onEndRegisterWithOpenPublish:openPublishReceipt.data should be a registration op");
-        t.equal(renderedComponent.state.fileDropState, "propagated", "onEndRegisterWithOpenPublish: component.state.fileDropState should be 'propagated'");
+        t.equal(renderedComponent.state.fileDropState, "registered", "onEndRegisterWithOpenPublish: component.state.fileDropState should be 'registered'");
         var blockcastTx = openPublishReceipt.blockcastTx;
         var txid = blockcastTx.txid;
         t.ok(txid, "onEndRegisterWithOpenPublish: openPublishReceipt.blockcastTx should have a txid");
@@ -135,8 +138,12 @@ test('react-image-publisher', function (t) {
         t.ok(bitstoreMeta.hash_sha1, "onEndUploadToBitstore: bitstoreMeta has a hash_sha1");
         delete(randomFile.stream); // if we want to re-use a file, we need to do a hack to remove the stream...
         renderedComponent.state.fileInfo.file = randomFile // undo our hack...
-        var registerWithOpenPublish = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'register-with-openpublish');
-        TestUtils.Simulate.click(registerWithOpenPublish.getDOMNode());
+        var verifyPayment = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'verify-register-payment');
+        TestUtils.Simulate.change(verifyPayment.getDOMNode(), {"target": {"checked": true}});
+        renderedComponent.forceUpdate(function() {
+          var registerWithOpenPublish = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'register-with-openpublish');
+          TestUtils.Simulate.click(registerWithOpenPublish.getDOMNode());
+        });
       };
 
       var onStartUploadToBitstore = function(err, receipt) { 
@@ -168,7 +175,8 @@ test('react-image-publisher', function (t) {
         onEndUploadToBitstore: onEndUploadToBitstore,
         onStartRegisterWithOpenPublish: onStartRegisterWithOpenPublish, 
         onEndRegisterWithOpenPublish: onEndRegisterWithOpenPublish, 
-        onFileDrop: onFileDrop 
+        onFileDrop: onFileDrop,
+        disableProgress: true
       }));
 
       var fileDropArea = TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'file-drop-area');

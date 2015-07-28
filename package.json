@@ -1,11 +1,11 @@
 {
   "name": "react-image-publisher",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "A common blockchain React component for publishing images with Bitstore and Open Publish",
   "main": "build/index.js",
   "scripts": {
     "build": "make",
-    "build-dev": "watchify example/example.js -o example/build.js -t babelify -v",
+    "build-dev": "watchify example/example.js -o example/build.js -t babelify -v -d",
     "watch": "nodemon --exec make --ignore example/ --ignore build/",
     "test": "npm run build && tapes test/**/*.js | tap-spec",
     "start": "http-server ./example/ -a 0.0.0.0 -p 9000 -c-1"
@@ -35,8 +35,9 @@
   },
   "dependencies": {
     "bitstore": "0.0.6",
+    "blockcast": "^1.0.5",
     "browser-request": "^0.3.3",
-    "openpublish": "0.0.7",
+    "openpublish": "0.0.9",
     "request": "^2.60.0",
     "shasum": "^1.0.1"
   },

@@ -26,9 +26,15 @@ var ImagePublisher = React.createClass({
       bitstoreBalance: false,
       fileDropState: false,
       fileSha1: false,
+      verifiedBitstorePayment: false,
+      verifiedRegisterPayment: false,
       payloadsLength: 0,
       propagationStatus: '',
-      openPublishReceipt: false
+      openPublishReceipt: false,
+      bitstoreUploadProgress: 0,
+      fileScanProgress: 0,
+      registerProgress: 0,
+      registeringMessage: 'Initializing transactions...'
     };
   },
   componentWillMount: function componentWillMount() {
@@ -41,6 +47,16 @@ var ImagePublisher = React.createClass({
     }
   },
   componentDidMount: function componentDidMount() {},
+  onVerifyBitstorePaymentToggle: function onVerifyBitstorePaymentToggle(event) {
+    this.setState({
+      verifiedBitstorePayment: event.target.checked
+    });
+  },
+  onVerifyRegisterPaymentToggle: function onVerifyRegisterPaymentToggle(event) {
+    this.setState({
+      verifiedRegisterPayment: event.target.checked
+    });
+  },
   updateBitstoreBalance: function updateBitstoreBalance(callback) {
     var component = this;
     var bitstoreClient = this.state.bitstoreClient;
@@ -51,7 +67,6 @@ var ImagePublisher = React.createClass({
         bitstoreDepositAddress: bitstoreDepositAddress,
         bitstoreBalance: bitstoreBalance
       });
-      console.log('bitstore wallet info', res.body);
       if (callback) {
         callback(false, bitstoreBalance);
       }
@@ -102,6 +117,41 @@ var ImagePublisher = React.createClass({
       });
     });
   },
+  getPayloadsLength: function getPayloadsLength(options) {
+    var component = this;
+    var commonBlockchain = this.props.commonBlockchain;
+    var commonWallet = this.props.commonWallet;
+    var bitstoreMeta = options.bitstoreMeta || this.state.bitstoreMeta;
+    var fileInfo = options.fileInfo || this.state.fileInfo;
+    var fileSha1 = options.fileSha1 || this.state.fileSha1;
+    openpublish.getPayloadsLength({
+      uri: bitstoreMeta.uri,
+      sha1: fileSha1,
+      file: fileInfo.file,
+      // title: title, // get from UI
+      // keywords: keywords, // get from UI
+      commonWallet: commonWallet,
+      commonBlockchain: commonBlockchain
+    }, function (err, payloadsLength) {
+      component.setState({
+        payloadsLength: payloadsLength
+      });
+    });
+  },
+  onBuildProgress: function onBuildProgress(e) {
+    // the first half of the registration process is building the transactions...
+    this.setState({
+      registeringMessage: 'Building and Signing transactions...',
+      registerProgress: Math.round(e.count / (e.payloadsLength * 2) * 100) // range: 0% to 50%
+    });
+  },
+  onPropagateProgress: function onPropagateProgress(e) {
+    // the second half of the registration process is propagating the transactions...
+    this.setState({
+      registeringMessage: 'Propagating transactions...',
+      registerProgress: Math.round((e.transactionTotal + e.count) / (e.transactionTotal * 2) * 100) // range: 50% to 100%
+    });
+  },
   readyToRegister: function readyToRegister() {
     return this.state.bitstoreMeta && this.state.bitstoreMeta.uri && this.state.fileInfo && this.state.fileInfo.file && this.state.fileSha1;
   },
@@ -132,7 +182,9 @@ var ImagePublisher = React.createClass({
       // title: title, // get from UI
       // keywords: keywords, // get from UI
       commonWallet: commonWallet,
-      commonBlockchain: commonBlockchain
+      commonBlockchain: commonBlockchain,
+      propagationStatus: component.onPropagateProgress,
+      buildStatus: component.onBuildProgress
     }, function (err, openPublishReceipt) {
       component.setState({
         fileDropState: 'registered',
@@ -143,19 +195,28 @@ var ImagePublisher = React.createClass({
       }
     });
   },
+  onBitstoreUploadProgress: function onBitstoreUploadProgress(e) {
+    if (!e.percent) {
+      return;
+    }
+    this.setState({
+      bitstoreUploadProgress: parseInt(e.percent)
+    });
+  },
   readyToUpload: function readyToUpload() {
     return this.state.fileInfo && this.state.fileInfo.file && this.state.fileSha1;
   },
   uploadToBitstore: function uploadToBitstore() {
+    var startTime = +new Date();
+    this.setState({
+      bitstoreState: 'checking file'
+    });
     var component = this;
     var onStartUploadToBitstore = this.props.onStartUploadToBitstore;
     var onEndUploadToBitstore = this.props.onEndUploadToBitstore;
     var commonWallet = this.props.commonWallet;
     if (commonWallet) {
       var bitstoreClient = this.state.bitstoreClient || this.props.bitstoreClient || bitstore(commonWallet);
-      this.setState({
-        bitstoreClient: bitstoreClient
-      });
     }
     var bitstoreClient = this.state.bitstoreClient;
     var fileInfo = this.state.fileInfo;
@@ -164,26 +225,27 @@ var ImagePublisher = React.createClass({
       return;
     }
     bitstoreClient.files.meta(fileSha1, function (err, res) {
-      console.log('bitstoreClient.files.meta', fileSha1, res);
       var bitstoreMeta = res.body;
       if (bitstoreMeta.size) {
         // needs a more robust check
         component.setState({
+          bitstoreState: '',
           bitstoreStatus: 'existing',
           bitstoreMeta: bitstoreMeta,
           fileDropState: 'uploaded'
         });
         return;
       }
+      component.setState({
+        bitstoreState: 'checking balance'
+      });
       bitstoreClient.wallet.get(function (err, res) {
-        console.log('bitstoreClient.wallet.get', commonWallet.address, res);
         var bitstoreBalance = res.body.balance;
         var bitstoreDepositAddress = res.body.deposit_address;
         component.setState({
           bitstoreDepositAddress: bitstoreDepositAddress,
           bitstoreBalance: bitstoreBalance
         });
-        console.log('bitstoreBalance', bitstoreBalance);
         if (bitstoreBalance <= 0) {
           component.setState({
             bitstoreState: 'no balance'
@@ -192,7 +254,8 @@ var ImagePublisher = React.createClass({
         }
         component.setState({
           bitstoreClient: bitstoreClient,
-          fileDropState: 'uploading'
+          fileDropState: 'uploading',
+          bitstoreState: 'has balance'
         });
         if (onStartUploadToBitstore) {
           onStartUploadToBitstore(false, {
@@ -201,9 +264,10 @@ var ImagePublisher = React.createClass({
             fileInfo: fileInfo
           });
         }
-        console.log('about to upload...');
+        if (!component.props.disableProgress) {
+          fileInfo.file.onProgress = component.onBitstoreUploadProgress;
+        }
         bitstoreClient.files.put(fileInfo.file, function (error, res) {
-          console.log('bitstoreClient.files.put', fileInfo.file, res);
           var bitstoreMeta = res.body;
           component.setState({
             bitstoreStatus: 'new',
@@ -215,6 +279,7 @@ var ImagePublisher = React.createClass({
               bitstoreMeta: bitstoreMeta
             });
           }
+          component.getPayloadsLength({ bitstoreMeta: bitstoreMeta, fileInfo: fileInfo, fileSha1: fileSha1 });
         });
       });
     });
@@ -229,6 +294,15 @@ var ImagePublisher = React.createClass({
   },
   drop: function drop(event) {
     event.preventDefault();
+
+    var commonWallet = this.props.commonWallet;
+    if (commonWallet) {
+      var bitstoreClient = this.state.bitstoreClient || this.props.bitstoreClient || bitstore(commonWallet);
+      this.setState({
+        bitstoreClient: bitstoreClient
+      });
+    }
+
     var component = this;
     var file = event.dataTransfer.files[0];
     component.setState({
@@ -263,6 +337,16 @@ var ImagePublisher = React.createClass({
         component.props.onFileDrop(false, fileInfo);
       }
     };
+    if (!component.props.disableProgress) {
+      reader.addEventListener('progress', function (e) {
+        if (e.lengthComputable) {
+          var percent = Math.round(e.loaded / e.total * 100);
+          component.setState({
+            fileScanProgress: percent
+          });
+        }
+      });
+    }
     reader.readAsBinaryString(file);
 
     var preview = new FileReader();
@@ -282,6 +366,8 @@ var ImagePublisher = React.createClass({
     var imgPreview = this.state.imgPreviewDataURL ? React.createElement('img', { className: 'image-preview', src: this.state.imgPreviewDataURL }) : false;
     var bitstoreMeta = this.state.bitstoreMeta;
     var bitstoreState = this.state.bitstoreState;
+    var bitstoreBalance = this.state.bitstoreBalance;
+    var bitstoreDepositAddress = this.state.bitstoreDepositAddress;
     var commonWallet = this.props.commonWallet || { address: '' };
 
     var fileName = this.state.fileInfo ? this.state.fileInfo.file.name : '';
@@ -294,27 +380,8 @@ var ImagePublisher = React.createClass({
     var readyToRegister = this.readyToRegister();
     var readyToUpload = this.readyToUpload();
 
-    var openPublishReceipt = this.state.openPublishReceipt;
-    var openPublishReceiptView;
-    if (openPublishReceipt) {
-      openPublishReceiptView = React.createElement(
-        'div',
-        { className: 'open-publish-receipt' },
-        React.createElement(
-          'p',
-          null,
-          'The transaction that represents your Open Publish registration is propagating and waiting for confirmation: ',
-          React.createElement(
-            'a',
-            { href: 'https://www.blocktrail.com/tBTC/tx/' + openPublishReceipt.blockcastTx.txid },
-            openPublishReceipt.blockcastTx.txid
-          )
-        )
-      );
-    }
-
     var scanFile;
-    if (readyToScan) {
+    if (readyToScan && !this.state.fileInfo) {
       scanFile = React.createElement(
         'div',
         { className: 'well well-lg file-drop-area ' + (fileDropState ? 'file-exists' : ''), onDragOver: this.dragOver, onDragEnd: this.dragEnd, onDrop: this.drop },
@@ -325,7 +392,12 @@ var ImagePublisher = React.createClass({
             'h4',
             null,
             'Drop Image File Here'
-          )
+          ),
+          fileDropState == 'scanning' ? React.createElement(
+            'h4',
+            null,
+            'Scanning File'
+          ) : false
         ),
         imgPreview
       );
@@ -336,28 +408,15 @@ var ImagePublisher = React.createClass({
       fileInformation = React.createElement(
         'div',
         { className: 'file-info panel panel-default' },
+        React.createElement('div', { className: 'file-drop-state' }),
         React.createElement(
           'div',
-          { className: 'panel-heading' },
-          'File Information'
+          { className: 'panel-body' },
+          imgPreview
         ),
         React.createElement(
           'table',
           { className: 'table' },
-          React.createElement(
-            'tr',
-            null,
-            React.createElement(
-              'th',
-              null,
-              'SHA1'
-            ),
-            React.createElement(
-              'td',
-              null,
-              fileSha1
-            )
-          ),
           React.createElement(
             'tr',
             null,
@@ -370,6 +429,20 @@ var ImagePublisher = React.createClass({
               'td',
               null,
               fileName
+            )
+          ),
+          React.createElement(
+            'tr',
+            null,
+            React.createElement(
+              'th',
+              null,
+              'SHA1'
+            ),
+            React.createElement(
+              'td',
+              null,
+              fileSha1
             )
           ),
           React.createElement(
@@ -400,6 +473,24 @@ var ImagePublisher = React.createClass({
               null,
               fileType
             )
+          ),
+          React.createElement(
+            'tr',
+            null,
+            React.createElement(
+              'th',
+              null,
+              'URI'
+            ),
+            React.createElement(
+              'td',
+              null,
+              React.createElement(
+                'a',
+                { href: bitstoreMeta.uri },
+                displayUri
+              )
+            )
           )
         )
       );
@@ -407,7 +498,7 @@ var ImagePublisher = React.createClass({
       scanPrompt = React.createElement(
         'p',
         { className: 'alert alert-info' },
-        'Before we can register an image with Open Publish we need to scan it an compute a unique digital fingerprint.'
+        'Drag and drop an image on the area to the left to get started.'
       );
     }
 
@@ -419,7 +510,7 @@ var ImagePublisher = React.createClass({
         React.createElement(
           'div',
           { className: 'panel-heading' },
-          'Bitstore Information'
+          'Bitstore File Information'
         ),
         React.createElement(
           'table',
@@ -444,36 +535,234 @@ var ImagePublisher = React.createClass({
           )
         )
       );
-    } else if (readyToUpload) {
+    } else if (readyToUpload && fileDropState != 'uploading' && bitstoreState != 'checking file' && bitstoreState != 'checking balance') {
       uploadFile = React.createElement(
         'div',
         { className: 'upload-file' },
         React.createElement(
           'p',
           { className: 'alert alert-info' },
-          'Before we can register an image with Open Publish we need to make sure that is uploaded to a server.',
-          React.createElement('br', null),
-          React.createElement('br', null),
-          'Bitstore is an easy, cheap and convenient service for hosting files.'
+          'Upload your image to Bitstore.'
+        ),
+        React.createElement(
+          'p',
+          null,
+          React.createElement(
+            'label',
+            { 'for': 'verify-bitstore-payment' },
+            React.createElement('input', { type: 'checkbox', onChange: this.onVerifyBitstorePaymentToggle, ref: 'verifyBitstorePayment', name: 'verify-bitstore-payment', className: 'verify-bitstore-payment' }),
+            ' I agree to the terms of service for Bitstore and to pay 100 bits for hosting and distribution costs.'
+          )
         ),
         React.createElement('input', { className: 'input', type: 'text', ref: 'bitstore-deposit-value', name: 'bitstore-deposit-value', style: { display: bitstoreState != 'no balance' ? 'none' : '' } }),
         React.createElement(
           'button',
-          { className: 'btn btn-lg btn-primary btn-block upload-to-bitstore button', onClick: this.uploadToBitstore },
+          { disabled: !this.state.verifiedBitstorePayment, className: 'btn btn-lg btn-primary btn-block upload-to-bitstore button', onClick: this.uploadToBitstore },
           'Upload To Bitstore'
         )
       );
     };
 
+    var bitstoreUploadProgress;
+    if (fileDropState == 'uploading') {
+      bitstoreUploadProgress = React.createElement(
+        'div',
+        null,
+        React.createElement(
+          'p',
+          { className: 'alert alert-info' },
+          'Uploading file to Bitstore...'
+        ),
+        React.createElement(
+          'div',
+          { className: 'progress' },
+          React.createElement('div', { className: 'progress-bar', style: { width: this.state.bitstoreUploadProgress + '%' } })
+        )
+      );
+    }
+
+    var bitstoreCheckingFile;
+    if (bitstoreState == 'checking file') {
+      bitstoreCheckingFile = React.createElement(
+        'p',
+        { className: 'alert alert-info' },
+        'Checking for existing file...'
+      );
+    }
+
+    var bitstoreAccountInformation;
+    if (bitstoreDepositAddress) {
+      bitstoreAccountInformation = React.createElement(
+        'div',
+        { className: 'bitstore-account-info panel panel-default' },
+        React.createElement(
+          'div',
+          { className: 'panel-heading' },
+          'Bitstore Account Information'
+        ),
+        React.createElement(
+          'table',
+          { className: 'table' },
+          React.createElement(
+            'tr',
+            null,
+            React.createElement(
+              'th',
+              null,
+              'Balance'
+            ),
+            React.createElement(
+              'td',
+              null,
+              bitstoreBalance
+            )
+          ),
+          React.createElement(
+            'tr',
+            null,
+            React.createElement(
+              'th',
+              null,
+              'Deposit Address'
+            ),
+            React.createElement(
+              'td',
+              null,
+              bitstoreDepositAddress
+            )
+          )
+        )
+      );
+    }
+
+    var bitstoreCheckingBalance;
+    if (bitstoreState == 'checking balance') {
+      bitstoreCheckingBalance = React.createElement(
+        'p',
+        { className: 'alert alert-info' },
+        'Checking Bitstore balance...'
+      );
+    }
+
     var registerFile;
-    if (readyToRegister) {
+    if (readyToRegister && fileDropState != 'registering' && fileDropState != 'registered') {
       registerFile = React.createElement(
         'div',
         { className: 'register-file' },
         React.createElement(
+          'p',
+          { className: 'alert alert-info' },
+          'You are now ready to register your image with Open Publish.'
+        ),
+        React.createElement(
+          'p',
+          null,
+          React.createElement(
+            'label',
+            { 'for': 'verify-register-payment' },
+            React.createElement('input', { type: 'checkbox', onChange: this.onVerifyRegisterPaymentToggle, ref: 'verifyRegisterPayment', name: 'verify-register-payment', className: 'verify-register-payment' }),
+            ' I agree to be the rightful owner of this media and to pay 60 bits in Bitcoin network transaction fees.'
+          )
+        ),
+        React.createElement(
           'button',
-          { disabled: fileDropState != 'uploaded', className: 'btn btn-lg btn-primary btn-block register-with-openpublish', onClick: this.registerWithOpenPublish },
-          'Sign and Propagate'
+          { disabled: !this.state.verifiedRegisterPayment, className: 'btn btn-lg btn-primary btn-block register-with-openpublish', onClick: this.registerWithOpenPublish },
+          'Register Image'
+        )
+      );
+    }
+
+    var registerProgress;
+    if (fileDropState == 'registering') {
+      registerProgress = React.createElement(
+        'div',
+        null,
+        React.createElement(
+          'p',
+          { className: 'alert alert-info' },
+          this.state.registeringMessage
+        ),
+        React.createElement(
+          'div',
+          { className: 'progress' },
+          React.createElement('div', { className: 'progress-bar', style: { width: this.state.registerProgress + '%' } })
+        )
+      );
+    }
+
+    var openPublishReceipt = this.state.openPublishReceipt;
+    var openPublishReceiptView;
+    if (openPublishReceipt) {
+      var txid = openPublishReceipt.blockcastTx.txid;
+      var displayTxid = txid.slice(0, 12) + '...' + txid.slice(-12, 64);
+      var transactionTotal = openPublishReceipt.blockcastTx.transactionTotal;
+      var blocktrailLink = React.createElement(
+        'a',
+        { href: 'https://www.blocktrail.com/tBTC/tx/' + txid },
+        'Blocktrail'
+      );
+      openPublishReceiptView = React.createElement(
+        'div',
+        null,
+        React.createElement(
+          'p',
+          { className: 'alert alert-success open-publish-receipt' },
+          'The transaction that represents your Open Publish registration is propagating and waiting for confirmation.'
+        ),
+        React.createElement(
+          'div',
+          { className: 'registration-info panel panel-default' },
+          React.createElement(
+            'div',
+            { className: 'panel-heading' },
+            'Registration Information'
+          ),
+          React.createElement(
+            'table',
+            { className: 'table' },
+            React.createElement(
+              'tr',
+              null,
+              React.createElement(
+                'th',
+                null,
+                'txid'
+              ),
+              React.createElement(
+                'td',
+                null,
+                displayTxid
+              )
+            ),
+            React.createElement(
+              'tr',
+              null,
+              React.createElement(
+                'th',
+                null,
+                'Transaction count'
+              ),
+              React.createElement(
+                'td',
+                null,
+                transactionTotal
+              )
+            ),
+            React.createElement(
+              'tr',
+              null,
+              React.createElement(
+                'th',
+                null,
+                'Transaction info'
+              ),
+              React.createElement(
+                'td',
+                null,
+                blocktrailLink
+              )
+            )
+          )
         )
       );
     }
@@ -486,13 +775,28 @@ var ImagePublisher = React.createClass({
         null,
         'Register an image with Open Publish'
       ),
-      scanFile,
-      scanPrompt,
-      fileInformation,
-      uploadFile,
-      bitstoreMetaInformation,
-      registerFile,
-      openPublishReceiptView
+      React.createElement(
+        'div',
+        { className: 'row' },
+        React.createElement(
+          'div',
+          { className: 'col-sm-6' },
+          scanFile,
+          fileInformation
+        ),
+        React.createElement(
+          'div',
+          { className: 'col-sm-6' },
+          scanPrompt,
+          bitstoreCheckingFile,
+          bitstoreCheckingBalance,
+          bitstoreUploadProgress,
+          uploadFile,
+          registerFile,
+          registerProgress,
+          openPublishReceiptView
+        )
+      )
     );
   }
 });
