@@ -6,191 +6,20 @@
   text-rendering: optimizeLegibility;
 }
 
+body {
+  background-color: #eee;
+}
+
 #example {
-  width: 675px;
+  width: 480px;
   margin: 0 auto;
+  padding-bottom: 400px;
 }
 
 .react-image-publisher {
-  margin: 20px;
-}
-
-.certificate {
-  width: 675px;
-  border: 10px solid #ddd; padding: 20px;
-  background-size: 100% 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.file-drop-area {
-  min-width: 30%;
-  min-height: 200px;
-  border: 2px dashed black;
-  font-family: Courier New;
-  font-weight: bold;
-  background-color: #74C365;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-  line-height: 200px;
-}
-
-.file-drop-area.file-exists {
-  border: none;
-  background-color: transparent;
+  padding: 20px;
 }
 
 .file-drop-area img {
-  width: auto;
-  max-height: 200px;
-}
-
-.openpublish-data {
   width: 100%;
-  align-self: flex-end;
-}
-
-.openpublish-container p {
-  margin: 0px 0px 0px 0px;
-}
-
-.openpublish-container p.proclaimation {
-  font-weight: bold;
-  font-size: 22px;
-  display: flex;
-  justify-content: space-between;
-  font-family: germania-one;
-}
-
-.openpublish-container p.share-definition {
-  font-size: 16px;
-  line-height: 20px;
-  margin-top: 10px;
-  font-family: miama, sans-serif;
-  display: flex;
-  justify-content: space-between;
-}
-
-.openpublish-container p.media-definition {
-  margin: 0px 0 10px 0;
-  font-size: 16px;
-  line-height: 30px;
-  font-family: miama, sans-serif;
-}
-
-.openpublish-container p.transfer-definition {
-  margin: 0px 0 0px 0;
-  font-size: 9px;
-  line-height: 30px;
-  font-family: miama, sans-serif;
-}
-
-.openpublish-container p.witness-definition {
-  margin: 0px 0 10px 0;
-  font-size: 9px;
-  line-height: 10px;
-  font-family: miama, sans-serif;
-}
-
-.openpublish-container .in-witness-whereof {
-  font-family: germania-one;
-}
-
-.openpublish-container .address {
-  font-family: Courier New;
-  font-weight: normal;
-  font-size: 16px;
-  border-bottom: 1px dashed black;
-}
-
-.openpublish-container .share-count {
-  font-family: Courier New;
-  font-weight: normal;
-  font-size: 12px;
-  border-bottom: 1px dashed black;
-}
-
-.openpublish-container .sha-1 {
-  font-family: Courier New;
-  font-weight: normal;
-  font-size: 12px;
-  border-bottom: 1px dashed black;
-}
-
-.data-definition {
-  display: flex;
-  margin-left: 30px;
-}
-
-.file-data {
-  width: 380px;
-}
-
-.file-data .name {
-  width: 180px;
-  overflow: hidden;
-  display: inline-block;
-}
-
-.file-data label {
-  width: 30px;
-  display: inline-block;
-  font-family: Courier New;
-  font-weight: bold;
-  vertical-align: top;
-}
-
-.data-item {
-  font-size: 12px;
-  font-family: Courier New;
-  height: 30px;
-}
-
-.openpublish-data .uri {
-  white-space: nowrap;
-}
-
-.openpublish-data label {
-  width: 70px;
-  display: inline-block;
-  font-family: Courier New;
-  vertical-align: top;
-  font-weight: bold;
-}
-
-.openpublish-data button.upload-to-bitstore {
-  width: 140px;
-  height: 20px;
-  background-color: #74C365;
-  border: 1px solid black;
-  margin-right: 10px;
-}
-
-.openpublish-data input {
-  height: 20px;
-  width: 140px;
-}
-
-button.register-with-openpublish {
-  float: right;
-  width: 140px;
-  margin-top: 20px;
-  height: 40px;
-  background-color: #74C365;
-  border: 1px solid black;
-}
-
-button.register-with-openpublish:disabled {
-  background-color: #eee;
-  border: 1px solid #ccc;
-}
-
-.open-publish-receipt {
-  font-family: sans-serif;
-  font-size: 12px;
 }

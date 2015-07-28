@@ -110,13 +110,13 @@ test('react-image-publisher', function (t) {
 
       var onStartRegisterWithOpenPublish = function(err, fileInfo) {
         renderedComponent.forceUpdate(function() {
-          t.equal(renderedComponent.state.fileDropState, "registering", "onStartRegisterWithOpenPublish: component.state.fileDropState should be 'registering'");
+          t.equal(renderedComponent.state.fileDropState, "propagating", "onStartRegisterWithOpenPublish: component.state.fileDropState should be 'propagating'");
         });
       };
 
       var onEndRegisterWithOpenPublish = function(err, openPublishReceipt) {
         t.ok(openPublishReceipt.data.op == "r", "onEndRegisterWithOpenPublish:openPublishReceipt.data should be a registration op");
-        t.equal(renderedComponent.state.fileDropState, "registered", "onEndRegisterWithOpenPublish: component.state.fileDropState should be 'registered'");
+        t.equal(renderedComponent.state.fileDropState, "propagated", "onEndRegisterWithOpenPublish: component.state.fileDropState should be 'propagated'");
         var blockcastTx = openPublishReceipt.blockcastTx;
         var txid = blockcastTx.txid;
         t.ok(txid, "onEndRegisterWithOpenPublish: openPublishReceipt.blockcastTx should have a txid");

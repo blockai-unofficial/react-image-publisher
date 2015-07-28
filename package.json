@@ -34,9 +34,9 @@
     "request": "browser-request"
   },
   "dependencies": {
-    "bitstore": "0.0.5",
+    "bitstore": "0.0.6",
     "browser-request": "^0.3.3",
-    "openpublish": "0.0.6",
+    "openpublish": "0.0.7",
     "request": "^2.60.0",
     "shasum": "^1.0.1"
   },
