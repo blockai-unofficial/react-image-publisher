@@ -45,3 +45,16 @@ label input[type=checkbox] {
   align-items: center;
   justify-content: center;
 }
+
+.no-balance {
+  width: 460px;
+  margin: 20px;
+}
+
+.no-balance h4 {
+  font-size: 24px;
+} 
+
+.no-balance p {
+  font-size: 16px;
+}

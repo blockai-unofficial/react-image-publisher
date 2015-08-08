@@ -34,9 +34,11 @@
     "request": "browser-request"
   },
   "dependencies": {
+    "bitcoin-tx-hex-to-json": "0.0.3",
     "bitstore": "0.0.6",
     "blockcast": "^1.0.5",
     "browser-request": "^0.3.3",
+    "md5": "^2.0.0",
     "openpublish": "0.0.9",
     "request": "^2.60.0",
     "shasum": "^1.0.1"
@@ -51,6 +53,7 @@
     "blockcast": "^1.0.3",
     "blockcypher-unofficial": "^1.4.1",
     "browserify": "^10.2.6",
+    "common-faucet": "^1.0.5",
     "file-api": "^0.10.4",
     "filereader": "^0.10.3",
     "http-server": "^0.8.0",

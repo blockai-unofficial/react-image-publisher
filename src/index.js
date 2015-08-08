@@ -2,6 +2,7 @@ var React = require('react');
 var openpublish = require('openpublish');
 var bitstore = require('bitstore');
 var shasum = require('shasum');
+var bitcoinTxHexToJSON = require('bitcoin-tx-hex-to-json'); 
 
 var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
@@ -17,6 +18,7 @@ var ImagePublisher = React.createClass({
   },
   getInitialState: function() {
     return {
+      balance: this.props.balance || 0,
       signedPayload: false,
       fileInfo: false,
       bitstoreMeta: false,
@@ -32,6 +34,7 @@ var ImagePublisher = React.createClass({
       bitstoreUploadProgress: 0,
       fileScanProgress: 0,
       registerProgress: 0,
+      isUpdatingBalance: false,
       registeringMessage: "Initializing transactions..."
     }
   },
@@ -45,7 +48,24 @@ var ImagePublisher = React.createClass({
     }
   },
   componentDidMount: function() {
-    //this.updateBitstoreBalance();
+    var component = this;
+    if (this.props.balance) {
+      component.pollBitstoreBalance({
+        retryAttempts: 100
+      });
+      return;
+    }
+    setInterval(function() {
+      if (!component.state.balance) {
+        component.updateBalance(function(err, balance) {
+          if (balance > 0) {
+            component.pollBitstoreBalance({
+              retryAttempts: 100
+            });
+          }
+        });
+      }
+    }, 3000);
   },
   onVerifyBitstorePaymentToggle: function(event) {
     this.setState({
@@ -57,7 +77,47 @@ var ImagePublisher = React.createClass({
       verifiedRegisterPayment: event.target.checked
     })
   },
+  checkIfUpdatingBitstoreBalance: function(callback) {
+    console.log("checkIfUpdatingBitstoreBalance");
+    var component = this;
+    var commonBlockchain = this.props.commonBlockchain;
+    var commonWallet = this.props.commonWallet;
+    var bitstoreDepositAddress = this.state.bitstoreDepositAddress;
+    if (this.state.isUpdatingBalance || this.state.didUpdateBalance) {
+      return;
+    }
+    commonBlockchain.Addresses.Transactions([commonWallet.address], function(err, adrs_txs) {
+      var txs = adrs_txs[0];
+      var foundUpdatingTx;
+      txs.forEach(function(tx) {
+        var txDetails = bitcoinTxHexToJSON(tx.txHex);
+        txDetails.vout.forEach(function(o) {
+          var addr = o.scriptPubKey.addresses[0];
+          if (addr == bitstoreDepositAddress) {
+            foundUpdatingTx = true;
+            console.log("setState", {
+              didUpdateBalance: true,
+              isUpdatingBalance: !(tx.blockHeight > 0)
+            });
+            component.setState({
+              didUpdateBalance: true,
+              isUpdatingBalance: !(tx.blockHeight > 0)
+            });
+            return;
+          }
+        });
+      });
+      if (foundUpdatingTx) {
+        return;
+      }
+      component.setState({
+        didUpdateBalance: false,
+        isUpdatingBalance: false
+      });
+    })
+  },
   updateBitstoreBalance: function(callback) {
+    console.log("updateBitstoreBalance");
     var component = this;
     var bitstoreClient = this.state.bitstoreClient;
     bitstoreClient.wallet.get(function (err, res) {
@@ -70,51 +130,101 @@ var ImagePublisher = React.createClass({
       if (callback) {
         callback(false, bitstoreBalance);
       }
+      if (bitstoreBalance === 0) {
+        component.checkIfUpdatingBitstoreBalance(); // we want to check to see if there are any unconfirmed transactions from the user to bitstoreDepositAddress
+      }
     });
   },
-  topUpBalance: function() {
+  updateBalance: function(callback) {
+    console.log("updateBalance");
     var component = this;
     var commonWallet = this.props.commonWallet;
-    var value; // wire up to UI
+    var commonBlockchain = this.props.commonBlockchain;
+    commonBlockchain.Addresses.Summary([commonWallet.address], function(err, adrs) { 
+      var balance = adrs && adrs[0] ? adrs[0].balance : 0;
+      component.setState({
+        balance: balance
+      });
+      if (callback) {
+        callback(false, balance);
+      }
+    });
+  },
+  pollBitstoreBalance: function(options) {
+    console.log("pollBitstoreBalance", options);
+    var component = this;
+    var retryAttempts = options.retryAttempts;
+    this.updateBitstoreBalance(function(err, bitstoreBalance) {
+      if (bitstoreBalance <= 0) {
+        if (options.onRetry) {
+          options.onRetry(retryAttempts);
+        }
+        return setTimeout(function() {
+          if (retryAttempts > 0) {
+            return component.pollBitstoreBalance({retryAttempts: --retryAttempts});
+          }
+          if (options.onNoConfirmation) {
+            options.onNoConfirmation();
+          }
+        }, 2000);
+      }
+      if (options.onConfirmation) {
+        options.onConfirmation();
+      }
+    });
+  },
+  topUpBalance: function(options) {
+    console.log("topUpBalance", options)
+    var component = this;
+    var commonWallet = this.props.commonWallet;
+    var commonBlockchain = this.props.commonBlockchain;
+    var value = 10000;
     var destinationAddress = this.state.bitstoreDepositAddress;
+    component.setState({
+      bitstoreState: "waiting for confirmation",
+      isUpdatingBalance: true
+    });
+    console.log("creating tx");
     commonWallet.createTransaction({
       destinationAddress: destinationAddress,
       value: value,
     }, function(err, signedTxHex) {
+      console.log("propagating tx", signedTxHex);
       commonBlockchain.Transactions.Propagate(signedTxHex, function(err, receipt) {
         if (err) {
           return;
         }
-        component.setState({
-          bitstoreState: "waiting for confirmation"
-        });
-        var checkBitstoreBalance = function(options) {
-          var retryAttempts = options.retryAttempts;
-          component.updateBitstoreBalance(function(err, bitstoreBalance) {
-            if (bitstoreBalance <= 0) {
-              component.setState({
-                bitstoreState: "still waiting for confirmation"
-              });
-              return setTimeout(function() {
-                if (retryAttempts > 0) {
-                  return checkBitstoreBalance(retryAttempts--);
-                }
-                component.setState({
-                  bitstoreState: "done waiting for confirmation"
-                });
-              }, 2000);
-            }
+        var totalRetryAttempts = 1000;
+        component.pollBitstoreBalance({
+          retryAttempts: totalRetryAttempts,
+          onRetry: function(retriesRemaining) {
+            var retryCount = totalRetryAttempts - retriesRemaining;
+            console.log("still waiting for confirmation", retryCount + "/" + totalRetryAttempts);
+            component.setState({
+              bitstoreState: "still waiting for confirmation"
+            });
+          },
+          onConfirmation: function() {
+            console.log("confirmed balance updated");
             component.setState({
               bitstoreState: "confirmed",
-              fileDropState: "scanned"
+              fileDropState: "scanned",
+              isUpdatingBalance: false
             });
-          });
-        };
-
-        checkBitstoreBalance({
-          retryAttempts: 5
+            if (options.onConfirmation) {
+              options.onConfirmation();
+            }
+          },
+          onNoConfirmation: function() {
+            console.log("giving up balance update");
+            component.setState({
+              bitstoreState: "done waiting for confirmation"
+            });
+            if (options.onNoConfirmation) {
+              options.onNoConfirmation();
+            }
+          }
         });
-
       });
     });
   },
@@ -205,13 +315,13 @@ var ImagePublisher = React.createClass({
     });
   },
   readyToUpload: function() {
+    if ((this.state.isUpdatingBalance && this.state.bitstoreBalance === 0) || (this.state.didUpdateBalance && this.state.bitstoreBalance === 0)) {
+      return false;
+    }
     return (this.state.fileInfo && this.state.fileInfo.file && this.state.fileSha1);
   },
   uploadToBitstore: function() {
     var startTime = +(new Date());
-    this.setState({
-      bitstoreState: "checking file"
-    });
     var component = this;
     var onStartUploadToBitstore = this.props.onStartUploadToBitstore;
     var onEndUploadToBitstore = this.props.onEndUploadToBitstore;
@@ -222,9 +332,20 @@ var ImagePublisher = React.createClass({
     var bitstoreClient = this.state.bitstoreClient;
     var fileInfo = this.state.fileInfo;
     var fileSha1 = this.state.fileSha1;
+    if (!this.state.bitstoreBalance && this.state.balance && !this.state.isUpdatingBalance) {
+      this.topUpBalance({
+        onConfirmation: function() {
+          component.uploadToBitstore();
+        }
+      });
+      return;
+    }
     if (!this.readyToUpload()) {
       return;
     }
+    this.setState({
+      bitstoreState: "checking file"
+    });
     bitstoreClient.files.meta(fileSha1, function(err, res) {
       var bitstoreMeta = res.body;
       if (bitstoreMeta.size) { // needs a more robust check
@@ -295,7 +416,7 @@ var ImagePublisher = React.createClass({
   },
   drop: function(event) {
     event.preventDefault();
-
+    this.updateBitstoreBalance();
     var commonWallet = this.props.commonWallet;
     if (commonWallet) {
       var bitstoreClient = this.state.bitstoreClient || this.props.bitstoreClient || bitstore(commonWallet);
@@ -364,6 +485,10 @@ var ImagePublisher = React.createClass({
     preview.readAsDataURL(file);
   },
   render: function () {
+    if (this.state.balance === 0 && this.props.balance === 0 &&  this.props.NoBalance) {
+      var NoBalance = this.props.NoBalance;
+      return <NoBalance address={this.props.commonWallet.address} intentMessage={"to register an image with Open Publish"}/>;
+    }
     var fileDropState = this.state.fileDropState;
     var imgPreview = this.state.imgPreviewDataURL ? <img className="image-preview" src={this.state.imgPreviewDataURL} /> : false;
     var bitstoreMeta = this.state.bitstoreMeta;
@@ -381,6 +506,8 @@ var ImagePublisher = React.createClass({
     var readyToScan = true;
     var readyToRegister = this.readyToRegister();
     var readyToUpload = this.readyToUpload();
+
+    var noBalance = bitstoreState == "no balance";
 
     var scanFile;
     if (readyToScan && !this.state.fileInfo) {
@@ -429,8 +556,27 @@ var ImagePublisher = React.createClass({
     else {
       scanPrompt = (
         <p className="alert alert-info">
-          Drag and drop an image on the area to the left to get started.
+          Drag and drop an image on the area below to get started.
         </p>
+      )
+    }
+
+    var bitstoreAccountInformation;
+    if (bitstoreDepositAddress) {
+      bitstoreAccountInformation = (
+        <div className="bitstore-account-info panel panel-warning">
+          <div className="panel-heading">Bitstore Account Information</div>
+          <table className="table">
+            <tr>
+              <th>Balance</th>
+              <td>{bitstoreBalance}</td>
+            </tr>
+            <tr>
+              <th>Deposit Address</th>
+              <td>{bitstoreDepositAddress}</td>
+            </tr>
+          </table>
+        </div>
       )
     }
 
@@ -451,14 +597,14 @@ var ImagePublisher = React.createClass({
     else if (readyToUpload && fileDropState != "uploading" && bitstoreState != "checking file" && bitstoreState != "checking balance") {
       uploadFile = (
         <div className="upload-file">
-          <p className="alert alert-info">
-            Upload your image to Bitstore.
+          <p className="alert alert-warning">
+            Pay a few cents in Bitcoin and upload your image to Bitstore.
           </p>
           <p>
             <label for="verify-bitstore-payment"><input type="checkbox" onChange={this.onVerifyBitstorePaymentToggle} ref="verifyBitstorePayment" name="verify-bitstore-payment" className="verify-bitstore-payment" /> I agree to the terms of service for Bitstore and to pay 100 bits for hosting and distribution costs.</label>
           </p>
-          <input className='input' type='text' ref='bitstore-deposit-value' name='bitstore-deposit-value' style={{display: bitstoreState != "no balance" ? 'none' : ''}} />
-          <button disabled={!this.state.verifiedBitstorePayment} className='btn btn-lg btn-primary btn-block upload-to-bitstore button' onClick={this.uploadToBitstore}>
+          
+          <button disabled={!this.state.verifiedBitstorePayment} className='btn btn-lg btn-warning btn-block upload-to-bitstore button' onClick={this.uploadToBitstore}>
             Upload To Bitstore
           </button>
         </div>
@@ -469,11 +615,11 @@ var ImagePublisher = React.createClass({
     if (fileDropState == "uploading") {
       bitstoreUploadProgress = (
         <div>
-          <p className="alert alert-info">
+          <p className="alert alert-warning">
             Uploading file to Bitstore...
           </p>
           <div className="progress">
-            <div className="progress-bar" style={{width: this.state.bitstoreUploadProgress + "%"}}></div>
+            <div className="progress-bar progress-bar-warning" style={{width: this.state.bitstoreUploadProgress + "%"}}></div>
           </div>
         </div>
       )
@@ -482,35 +628,25 @@ var ImagePublisher = React.createClass({
     var bitstoreCheckingFile;
     if (bitstoreState == "checking file") {
       bitstoreCheckingFile = (
-        <p className="alert alert-info">
+        <p className="alert alert-warning">
           Checking for existing file...
         </p>
       )
     }
 
-    var bitstoreAccountInformation;
-    if (bitstoreDepositAddress) {
-      bitstoreAccountInformation = (
-        <div className="bitstore-account-info panel panel-default">
-          <div className="panel-heading">Bitstore Account Information</div>
-          <table className="table">
-            <tr>
-              <th>Balance</th>
-              <td>{bitstoreBalance}</td>
-            </tr>
-            <tr>
-              <th>Deposit Address</th>
-              <td>{bitstoreDepositAddress}</td>
-            </tr>
-          </table>
-        </div>
+    var bitstoreDepositingBitcoin;
+    if ((this.state.isUpdatingBalance && this.state.bitstoreBalance === 0) || (this.state.didUpdateBalance && this.state.bitstoreBalance === 0)) {
+      bitstoreDepositingBitcoin = (
+        <p className="alert alert-warning">
+          Waiting for Bitstore balance to update...
+        </p>
       )
     }
 
     var bitstoreCheckingBalance;
     if (bitstoreState == "checking balance") {
       bitstoreCheckingBalance = (
-        <p className="alert alert-info">
+        <p className="alert alert-warning">
           Checking Bitstore balance...
         </p>
       )
@@ -585,11 +721,13 @@ var ImagePublisher = React.createClass({
         <h3>Register an image with Open Publish</h3>
         <div className="row">
           <div className="col-sm-6">
+            {scanPrompt}
             {scanFile}
             {fileInformation}
           </div>
           <div className="col-sm-6">
-            {scanPrompt}
+            {bitstoreAccountInformation}
+            {bitstoreDepositingBitcoin}
             {bitstoreCheckingFile}
             {bitstoreCheckingBalance}
             {bitstoreUploadProgress}
