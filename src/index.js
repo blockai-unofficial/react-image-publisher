@@ -485,7 +485,7 @@ var ImagePublisher = React.createClass({
     preview.readAsDataURL(file);
   },
   render: function () {
-    if (this.state.balance === 0 && this.props.balance === 0 &&  this.props.NoBalance) {
+    if (this.state.balance === 0 && this.props.balance === 0 && this.props.NoBalance) {
       var NoBalance = this.props.NoBalance;
       return <NoBalance address={this.props.commonWallet.address} intentMessage={"to register an image with Open Publish"}/>;
     }
