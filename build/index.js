@@ -85,7 +85,7 @@ var ImagePublisher = React.createClass({
     var commonBlockchain = this.props.commonBlockchain;
     var commonWallet = this.props.commonWallet;
     var bitstoreDepositAddress = this.state.bitstoreDepositAddress;
-    if (this.state.isUpdatingBalance) {
+    if (this.state.isUpdatingBalance || this.state.didUpdateBalance) {
       return;
     }
     commonBlockchain.Addresses.Transactions([commonWallet.address], function (err, adrs_txs) {
@@ -123,7 +123,7 @@ var ImagePublisher = React.createClass({
     var component = this;
     var bitstoreClient = this.state.bitstoreClient;
     bitstoreClient.wallet.get(function (err, res) {
-      var bitstoreBalance = res.body.balance;
+      var bitstoreBalance = res.body.total_balance;
       var bitstoreDepositAddress = res.body.deposit_address;
       component.setState({
         bitstoreDepositAddress: bitstoreDepositAddress,
@@ -191,12 +191,12 @@ var ImagePublisher = React.createClass({
       destinationAddress: destinationAddress,
       value: value
     }, function (err, signedTxHex) {
-      console.log('propagating tx', signedTxHex);
+      console.log('propagating tx');
       commonBlockchain.Transactions.Propagate(signedTxHex, function (err, receipt) {
         if (err) {
           return;
         }
-        var totalRetryAttempts = 25;
+        var totalRetryAttempts = 1000;
         component.pollBitstoreBalance({
           retryAttempts: totalRetryAttempts,
           onRetry: function onRetry(retriesRemaining) {
@@ -364,7 +364,7 @@ var ImagePublisher = React.createClass({
         bitstoreState: 'checking balance'
       });
       bitstoreClient.wallet.get(function (err, res) {
-        var bitstoreBalance = res.body.balance;
+        var bitstoreBalance = res.body.total_balance;
         var bitstoreDepositAddress = res.body.deposit_address;
         component.setState({
           bitstoreDepositAddress: bitstoreDepositAddress,
@@ -765,7 +765,7 @@ var ImagePublisher = React.createClass({
     }
 
     var bitstoreDepositingBitcoin;
-    if (this.state.isUpdatingBalance || this.state.didUpdateBalance && this.state.bitstoreBalance === 0) {
+    if (this.state.isUpdatingBalance && this.state.bitstoreBalance === 0 || this.state.didUpdateBalance && this.state.bitstoreBalance === 0) {
       bitstoreDepositingBitcoin = React.createElement(
         'p',
         { className: 'alert alert-warning' },

@@ -121,7 +121,7 @@ var ImagePublisher = React.createClass({
     var component = this;
     var bitstoreClient = this.state.bitstoreClient;
     bitstoreClient.wallet.get(function (err, res) {
-      var bitstoreBalance = res.body.balance;
+      var bitstoreBalance = res.body.total_balance;
       var bitstoreDepositAddress = res.body.deposit_address;
       component.setState({
         bitstoreDepositAddress: bitstoreDepositAddress,
@@ -189,7 +189,7 @@ var ImagePublisher = React.createClass({
       destinationAddress: destinationAddress,
       value: value,
     }, function(err, signedTxHex) {
-      console.log("propagating tx", signedTxHex);
+      console.log("propagating tx");
       commonBlockchain.Transactions.Propagate(signedTxHex, function(err, receipt) {
         if (err) {
           return;
@@ -361,7 +361,7 @@ var ImagePublisher = React.createClass({
         bitstoreState: "checking balance"
       });
       bitstoreClient.wallet.get(function (err, res) {
-        var bitstoreBalance = res.body.balance;
+        var bitstoreBalance = res.body.total_balance;
         var bitstoreDepositAddress = res.body.deposit_address;
         component.setState({
           bitstoreDepositAddress: bitstoreDepositAddress,
