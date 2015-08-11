@@ -78,11 +78,14 @@ var ImagePublisher = React.createClass({
     })
   },
   checkIfUpdatingBitstoreBalance: function(callback) {
-    console.log("checkIfUpdatingBitstoreBalance");
+    //console.log("checkIfUpdatingBitstoreBalance");
     var component = this;
     var commonBlockchain = this.props.commonBlockchain;
     var commonWallet = this.props.commonWallet;
     var bitstoreDepositAddress = this.state.bitstoreDepositAddress;
+    if (!commonWallet || !commonWallet.address || !commonBlockchain || !bitstoreDepositAddress) {
+      return;
+    }
     if (this.state.isUpdatingBalance || this.state.didUpdateBalance) {
       return;
     }
@@ -95,10 +98,10 @@ var ImagePublisher = React.createClass({
           var addr = o.scriptPubKey.addresses[0];
           if (addr == bitstoreDepositAddress) {
             foundUpdatingTx = true;
-            console.log("setState", {
-              didUpdateBalance: true,
-              isUpdatingBalance: !(tx.blockHeight > 0)
-            });
+            // console.log("setState", {
+            //   didUpdateBalance: true,
+            //   isUpdatingBalance: !(tx.blockHeight > 0)
+            // });
             component.setState({
               didUpdateBalance: true,
               isUpdatingBalance: !(tx.blockHeight > 0)
@@ -117,9 +120,12 @@ var ImagePublisher = React.createClass({
     })
   },
   updateBitstoreBalance: function(callback) {
-    console.log("updateBitstoreBalance");
+    //console.log("updateBitstoreBalance");
     var component = this;
     var bitstoreClient = this.state.bitstoreClient;
+    if (!bitstoreClient) {
+      return;
+    }
     bitstoreClient.wallet.get(function (err, res) {
       var bitstoreBalance = res.body.total_balance;
       var bitstoreDepositAddress = res.body.deposit_address;
@@ -136,10 +142,13 @@ var ImagePublisher = React.createClass({
     });
   },
   updateBalance: function(callback) {
-    console.log("updateBalance");
+    //console.log("updateBalance");
     var component = this;
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
+    if (!commonWallet || !commonWallet.address || !commonBlockchain) {
+      return;
+    }
     commonBlockchain.Addresses.Summary([commonWallet.address], function(err, adrs) { 
       var balance = adrs && adrs[0] ? adrs[0].balance : 0;
       component.setState({
@@ -151,7 +160,7 @@ var ImagePublisher = React.createClass({
     });
   },
   pollBitstoreBalance: function(options) {
-    console.log("pollBitstoreBalance", options);
+    //console.log("pollBitstoreBalance", options);
     var component = this;
     var retryAttempts = options.retryAttempts;
     this.updateBitstoreBalance(function(err, bitstoreBalance) {
@@ -174,22 +183,25 @@ var ImagePublisher = React.createClass({
     });
   },
   topUpBalance: function(options) {
-    console.log("topUpBalance", options)
+    //console.log("topUpBalance", options)
     var component = this;
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
     var value = 10000;
     var destinationAddress = this.state.bitstoreDepositAddress;
+    if (!commonWallet || !commonWallet.address || !commonBlockchain || !destinationAddress) {
+      return;
+    }
     component.setState({
       bitstoreState: "waiting for confirmation",
       isUpdatingBalance: true
     });
-    console.log("creating tx");
+    //console.log("creating tx");
     commonWallet.createTransaction({
       destinationAddress: destinationAddress,
       value: value,
     }, function(err, signedTxHex) {
-      console.log("propagating tx");
+      //console.log("propagating tx");
       commonBlockchain.Transactions.Propagate(signedTxHex, function(err, receipt) {
         if (err) {
           return;
@@ -199,13 +211,13 @@ var ImagePublisher = React.createClass({
           retryAttempts: totalRetryAttempts,
           onRetry: function(retriesRemaining) {
             var retryCount = totalRetryAttempts - retriesRemaining;
-            console.log("still waiting for confirmation", retryCount + "/" + totalRetryAttempts);
+            //console.log("still waiting for confirmation", retryCount + "/" + totalRetryAttempts);
             component.setState({
               bitstoreState: "still waiting for confirmation"
             });
           },
           onConfirmation: function() {
-            console.log("confirmed balance updated");
+            //console.log("confirmed balance updated");
             component.setState({
               bitstoreState: "confirmed",
               fileDropState: "scanned",
@@ -216,7 +228,7 @@ var ImagePublisher = React.createClass({
             }
           },
           onNoConfirmation: function() {
-            console.log("giving up balance update");
+            //console.log("giving up balance update");
             component.setState({
               bitstoreState: "done waiting for confirmation"
             });
@@ -485,7 +497,10 @@ var ImagePublisher = React.createClass({
     preview.readAsDataURL(file);
   },
   render: function () {
-    if (this.state.balance === 0 && this.props.balance === 0 && this.props.NoBalance) {
+     if (!this.props.commonWallet || !this.props.commonWallet.address || !this.props.commonBlockchain) {
+      return false;
+    }
+    if (this.state.balance === 0 && this.props.balance === 0 && this.props.NoBalance && this.props.commonWallet && this.props.commonWallet.address) {
       var NoBalance = this.props.NoBalance;
       return <NoBalance address={this.props.commonWallet.address} intentMessage={"to register an image with Open Publish"}/>;
     }
