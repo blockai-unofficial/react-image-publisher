@@ -124,6 +124,9 @@ var ImagePublisher = React.createClass({
     var component = this;
     var bitstoreClient = this.state.bitstoreClient;
     if (!bitstoreClient) {
+      if (callback) {
+        callback(true, 0);
+      }
       return;
     }
     bitstoreClient.wallet.get(function (err, res) {
