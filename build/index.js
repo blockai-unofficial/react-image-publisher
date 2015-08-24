@@ -818,7 +818,7 @@ var ImagePublisher = React.createClass({
             'label',
             { 'for': 'verify-register-payment' },
             React.createElement('input', { type: 'checkbox', onChange: this.onVerifyRegisterPaymentToggle, ref: 'verifyRegisterPayment', name: 'verify-register-payment', className: 'verify-register-payment' }),
-            ' I agree to be the rightful owner of this media and to pay 180 bits in Bitcoin network transaction fees.'
+            ' I agree to the terms of service and to be the rightful owner of this media and to pay 180 bits in Bitcoin network transaction fees.'
           )
         ),
         React.createElement(
