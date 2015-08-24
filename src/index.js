@@ -302,6 +302,7 @@ var ImagePublisher = React.createClass({
       onStartRegisterWithOpenPublish(false, fileInfo);
     }
     openpublish.register({
+      fee: 3000, // this will be dynamic shortly!
       uri: bitstoreMeta.uri,
       sha1: fileSha1,
       file: fileInfo.file,
@@ -678,7 +679,7 @@ var ImagePublisher = React.createClass({
             You are now ready to register your image with Open Publish.
           </p>
           <p>
-            <label for="verify-register-payment"><input type="checkbox" onChange={this.onVerifyRegisterPaymentToggle} ref="verifyRegisterPayment" name="verify-register-payment" className="verify-register-payment"/> I agree to be the rightful owner of this media and to pay 60 bits in Bitcoin network transaction fees.</label>
+            <label for="verify-register-payment"><input type="checkbox" onChange={this.onVerifyRegisterPaymentToggle} ref="verifyRegisterPayment" name="verify-register-payment" className="verify-register-payment"/> I agree to be the rightful owner of this media and to pay 180 bits in Bitcoin network transaction fees.</label>
           </p>
           <button disabled={!this.state.verifiedRegisterPayment} className='btn btn-lg btn-primary btn-block register-with-openpublish' onClick={this.registerWithOpenPublish}>
             Register Image
