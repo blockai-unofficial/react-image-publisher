@@ -5,6 +5,10 @@ var openpublish = require('openpublish');
 var bitstore = require('bitstore');
 var shasum = require('shasum');
 var bitcoinTxHexToJSON = require('bitcoin-tx-hex-to-json');
+var request = require('request');
+
+var ReactBootstrap = require('react-bootstrap');
+var Input = ReactBootstrap.Input;
 
 var ImagePublisher = React.createClass({
   displayName: 'ImagePublisher',
@@ -23,6 +27,7 @@ var ImagePublisher = React.createClass({
       balance: this.props.balance || 0,
       signedPayload: false,
       fileInfo: false,
+      uri: false,
       bitstoreMeta: false,
       bitstoreDepositAddress: false,
       bitstoreBalance: false,
@@ -192,7 +197,7 @@ var ImagePublisher = React.createClass({
     var component = this;
     var commonWallet = this.props.commonWallet;
     var commonBlockchain = this.props.commonBlockchain;
-    var value = 10000;
+    var value = 30000;
     var destinationAddress = this.state.bitstoreDepositAddress;
     if (!commonWallet || !commonWallet.address || !commonBlockchain || !destinationAddress) {
       return;
@@ -281,13 +286,14 @@ var ImagePublisher = React.createClass({
     });
   },
   readyToRegister: function readyToRegister() {
-    return this.state.bitstoreMeta && this.state.bitstoreMeta.uri && this.state.fileInfo && this.state.fileInfo.file && this.state.fileSha1;
+    return this.state.uri && this.state.fileInfo && this.state.fileInfo.file && this.state.fileSha1;
   },
   registerWithOpenPublish: function registerWithOpenPublish() {
     var component = this;
     var onStartRegisterWithOpenPublish = this.props.onStartRegisterWithOpenPublish;
     var onEndRegisterWithOpenPublish = this.props.onEndRegisterWithOpenPublish;
     var fileSha1 = this.state.fileSha1;
+    var uri = this.state.uri;
     var bitstoreMeta = this.state.bitstoreMeta;
     var fileInfo = this.state.fileInfo;
     // var title = this.refs.title.getDOMNode().value;
@@ -305,7 +311,7 @@ var ImagePublisher = React.createClass({
     }
     openpublish.register({
       fee: 3000, // this will be dynamic shortly!
-      uri: bitstoreMeta.uri,
+      uri: uri,
       sha1: fileSha1,
       file: fileInfo.file,
       // title: title, // get from UI
@@ -337,6 +343,40 @@ var ImagePublisher = React.createClass({
       return false;
     }
     return this.state.fileInfo && this.state.fileInfo.file && this.state.fileSha1;
+  },
+  onExistingUri: function onExistingUri(event) {
+    var component = this;
+    this.setState({
+      uri: false,
+      existingUriError: false,
+      checkingExistingUri: true
+    });
+    var existingUri = this.refs.existingUri.getValue();
+    var img = new Image();
+    img.onload = function (event) {
+      var sha1sumURL = 'http://sha1uri-store.d.blockai.com/uri/' + encodeURIComponent(existingUri);
+      request(sha1sumURL, function (err, resp, sha1) {
+        if (!err && sha1) {
+          if (sha1 === component.state.fileSha1) {
+            component.setState({ uri: existingUri, checkingExistingUri: false });
+          } else {
+            component.setState({ existingUriError: 'sha1 mismatch', checkingExistingUri: false });
+          }
+        }
+      });
+    };
+    img.onerror = function (event) {
+      component.setState({ existingUriError: 'not found', checkingExistingUri: false });
+    };
+    img.src = existingUri;
+  },
+  existingUriValidationState: function existingUriValidationState() {
+    if (this.state.uri) {
+      return 'success';
+    } else if (this.state.existingUriError) {
+      return 'error';
+    }
+    return;
   },
   uploadToBitstore: function uploadToBitstore() {
     var startTime = +new Date();
@@ -372,6 +412,7 @@ var ImagePublisher = React.createClass({
           bitstoreState: '',
           bitstoreStatus: 'existing',
           bitstoreMeta: bitstoreMeta,
+          uri: bitstoreMeta.uri,
           fileDropState: 'uploaded'
         });
         return;
@@ -412,11 +453,13 @@ var ImagePublisher = React.createClass({
           component.setState({
             bitstoreStatus: 'new',
             bitstoreMeta: bitstoreMeta,
+            uri: bitstoreMeta.uri,
             fileDropState: 'uploaded'
           });
           if (onEndUploadToBitstore) {
             onEndUploadToBitstore(false, {
-              bitstoreMeta: bitstoreMeta
+              bitstoreMeta: bitstoreMeta,
+              uri: bitstoreMeta.uri
             });
           }
           component.getPayloadsLength({ bitstoreMeta: bitstoreMeta, fileInfo: fileInfo, fileSha1: fileSha1 });
@@ -449,6 +492,7 @@ var ImagePublisher = React.createClass({
       fileDropState: 'scanning',
       fileInfo: false,
       bitstoreMeta: false,
+      uri: false,
       fileSha1: false
     });
     var bufferReader = new FileReader();
@@ -511,6 +555,7 @@ var ImagePublisher = React.createClass({
     }
     var fileDropState = this.state.fileDropState;
     var imgPreview = this.state.imgPreviewDataURL ? React.createElement('img', { className: 'image-preview', src: this.state.imgPreviewDataURL }) : false;
+
     var bitstoreMeta = this.state.bitstoreMeta;
     var bitstoreState = this.state.bitstoreState;
     var bitstoreBalance = this.state.bitstoreBalance;
@@ -521,7 +566,8 @@ var ImagePublisher = React.createClass({
     var fileType = this.state.fileInfo ? this.state.fileInfo.file.type : '';
     var fileSize = this.state.fileInfo ? this.state.fileInfo.file.size : '';
     var fileSha1 = this.state.fileSha1;
-    var displayUri = bitstoreMeta.uri ? bitstoreMeta.uri.split('//')[1].split('/')[0] + '/.../' + fileSha1.slice(0, 3) + '...' + fileSha1.slice(-3, 40) : '';
+    var uri = this.state.uri;
+    var displayUri = uri ? uri.split('//')[1].split('/')[0] + '/.../' + fileSha1.slice(0, 3) + '...' + fileSha1.slice(-3, 40) : '';
 
     var readyToScan = true;
     var readyToRegister = this.readyToRegister();
@@ -636,7 +682,7 @@ var ImagePublisher = React.createClass({
               null,
               React.createElement(
                 'a',
-                { href: bitstoreMeta.uri },
+                { href: uri },
                 displayUri
               )
             )
@@ -729,7 +775,35 @@ var ImagePublisher = React.createClass({
           )
         )
       );
-    } else if (readyToUpload && fileDropState != 'uploading' && bitstoreState != 'checking file' && bitstoreState != 'checking balance') {
+    } else if (readyToUpload && fileDropState != 'uploading' && bitstoreState != 'checking file' && bitstoreState != 'checking balance' && !uri) {
+
+      var checkingExistingUri;
+      if (this.state.checkingExistingUri) {
+        checkingExistingUri = React.createElement(
+          'p',
+          { className: 'alert alert-warning' },
+          'Checking Existing URI...'
+        );
+      }
+
+      var existingUriNotFound;
+      if (this.state.existingUriError == 'not found') {
+        existingUriNotFound = React.createElement(
+          'p',
+          { className: 'alert alert-danger' },
+          'Existing URI Not Found! Please check to see that you pasted in the correct URI.'
+        );
+      }
+
+      var existingUriSha1Mismatch;
+      if (this.state.existingUriError == 'sha1 mismatch') {
+        existingUriSha1Mismatch = React.createElement(
+          'p',
+          { className: 'alert alert-danger' },
+          'Existing URI Does Not Match Scanned File! Please check to see that you pasted in the correct URI.'
+        );
+      }
+
       uploadFile = React.createElement(
         'div',
         { className: 'upload-file' },
@@ -745,14 +819,23 @@ var ImagePublisher = React.createClass({
             'label',
             { 'for': 'verify-bitstore-payment' },
             React.createElement('input', { type: 'checkbox', onChange: this.onVerifyBitstorePaymentToggle, ref: 'verifyBitstorePayment', name: 'verify-bitstore-payment', className: 'verify-bitstore-payment' }),
-            ' I agree to the terms of service for Bitstore and to pay 100 bits for hosting and distribution costs.'
+            ' I agree to the terms of service for Bitstore and to pay 300 bits for hosting and distribution costs.'
           )
         ),
         React.createElement(
           'button',
           { disabled: !this.state.verifiedBitstorePayment, className: 'btn btn-lg btn-warning btn-block upload-to-bitstore button', onClick: this.uploadToBitstore },
           'Upload To Bitstore'
-        )
+        ),
+        React.createElement(
+          'div',
+          { className: 'or' },
+          '- Or - '
+        ),
+        React.createElement(Input, { type: 'text', label: 'Existing URI', ref: 'existingUri', placeholder: 'Enter Image URI', bsStyle: this.existingUriValidationState(), onChange: this.onExistingUri }),
+        checkingExistingUri,
+        existingUriNotFound,
+        existingUriSha1Mismatch
       );
     };
 
