@@ -5,6 +5,8 @@ var shasum = require('shasum');
 var bitcoinTxHexToJSON = require('bitcoin-tx-hex-to-json');
 var request = require("request");
 
+//  <iframe src="https://www.blockai.com/embed/2dd0b83677ac2271daab79782f0b9dcb4038d659" width="640" height="490" frameBorder="0"/>
+
 var ReactBootstrap = require('react-bootstrap');
 var Input = ReactBootstrap.Input;
 
