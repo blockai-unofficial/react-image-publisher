@@ -211,7 +211,7 @@ var ImagePublisher = React.createClass({
     //console.log("creating tx");
     commonWallet.createTransaction({
       destinationAddress: destinationAddress,
-      value: value
+      valueInBTC: value
     }, function (err, signedTxHex) {
       //console.log("propagating tx");
       commonBlockchain.Transactions.Propagate(signedTxHex, function (err, receipt) {
